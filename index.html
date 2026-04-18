@@ -364,8 +364,10 @@ function populateDaySelect() {
     sel.appendChild(opt);
   });
   sel.value = currentDayIndex;
+  syncSessionTypeToDay();
+}
 
-  // Sync session type dropdown to match the selected day's type
+function syncSessionTypeToDay() {
   const day = program.days[currentDayIndex];
   if (day && day.type) {
     currentSessionType = day.type;
@@ -376,21 +378,16 @@ function populateDaySelect() {
 
 function changeDay() {
   currentDayIndex = parseInt(document.getElementById('daySelect').value);
-  // Sync session type to the new day's type
-  const day = program.days[currentDayIndex];
-  if (day && day.type) {
-    currentSessionType = day.type;
-    const sessionSel = document.getElementById('sessionType');
-    if (sessionSel) sessionSel.value = day.type;
-  }
+  syncSessionTypeToDay();
   buildWorkout();
 }
 
 // ==================== SESSION / DAY ====================
 function changeSession() {
   currentSessionType = document.getElementById('sessionType').value;
+  // When user manually picks a session type, override the day type
   const wrapper = document.getElementById('daySelectWrapper');
-  wrapper.style.visibility = currentSessionType === 'strength' ? 'visible' : 'hidden';
+  wrapper.style.visibility = currentSessionType === 'strength' ? 'visible' : 'visible';
   buildWorkout();
 }
 
@@ -402,11 +399,11 @@ function buildWorkout() {
 
   const day = program.days[currentDayIndex];
 
-  // Always trust the program day's type if it exists
-  // Only fall back to the dropdown if the day has no type set
-  const effectiveType = (day && day.type) ? day.type : currentSessionType;
+  // Session dropdown always wins — user can override any day's type manually
+  // But if session type hasn't been manually changed, use the day's type
+  const effectiveType = currentSessionType;
 
-  // Keep dropdown in sync
+  // Sync dropdown to show current effective type
   const sel = document.getElementById('sessionType');
   if (sel && sel.value !== effectiveType) sel.value = effectiveType;
 
