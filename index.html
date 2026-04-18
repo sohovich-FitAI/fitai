@@ -365,14 +365,25 @@ function populateDaySelect() {
   });
   sel.value = currentDayIndex;
 
-  // Auto-set session type based on selected day's type
+  // Sync session type dropdown to match the selected day's type
   const day = program.days[currentDayIndex];
   if (day && day.type) {
     currentSessionType = day.type;
-    document.getElementById('sessionType').value = day.type;
-    const wrapper = document.getElementById('daySelectWrapper');
-    wrapper.style.visibility = day.type === 'strength' ? 'visible' : 'visible';
+    const sessionSel = document.getElementById('sessionType');
+    if (sessionSel) sessionSel.value = day.type;
   }
+}
+
+function changeDay() {
+  currentDayIndex = parseInt(document.getElementById('daySelect').value);
+  // Sync session type to the new day's type
+  const day = program.days[currentDayIndex];
+  if (day && day.type) {
+    currentSessionType = day.type;
+    const sessionSel = document.getElementById('sessionType');
+    if (sessionSel) sessionSel.value = day.type;
+  }
+  buildWorkout();
 }
 
 // ==================== SESSION / DAY ====================
@@ -383,11 +394,6 @@ function changeSession() {
   buildWorkout();
 }
 
-function changeDay() {
-  currentDayIndex = parseInt(document.getElementById('daySelect').value);
-  buildWorkout();
-}
-
 // ==================== BUILD WORKOUT ====================
 function buildWorkout() {
   const content = document.getElementById('workoutContent');
@@ -395,8 +401,14 @@ function buildWorkout() {
   content.innerHTML = '';
 
   const day = program.days[currentDayIndex];
-  const dayType = day ? (day.type || 'strength') : currentSessionType;
-  const effectiveType = currentSessionType !== 'strength' ? currentSessionType : dayType;
+
+  // Always trust the program day's type if it exists
+  // Only fall back to the dropdown if the day has no type set
+  const effectiveType = (day && day.type) ? day.type : currentSessionType;
+
+  // Keep dropdown in sync
+  const sel = document.getElementById('sessionType');
+  if (sel && sel.value !== effectiveType) sel.value = effectiveType;
 
   if (effectiveType === 'strength') {
     titleEl.textContent = day.name;
@@ -406,7 +418,7 @@ function buildWorkout() {
     content.appendChild(buildNormatec());
     content.appendChild(buildNotes());
   } else if (effectiveType === 'cardio') {
-    titleEl.textContent = 'Cardio Session';
+    titleEl.textContent = day ? day.name : 'Cardio Session';
     content.appendChild(buildCardio());
     content.appendChild(buildNormatec());
     content.appendChild(buildNotes());
