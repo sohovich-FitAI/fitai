@@ -83,35 +83,57 @@
 
     <!-- Big prominent copy button FIRST -->
     <button onclick="copyPrompt()" id="copyPromptBtn"
-            class="w-full bg-amber-500 text-black font-bold py-5 rounded-2xl text-base mb-5 flex items-center justify-center gap-2">
-      <span>Step 1 — Copy the Claude Prompt</span>
+            class="w-full bg-amber-500 text-black font-bold py-5 rounded-2xl text-base mb-4 flex items-center justify-center gap-2">
+      <span>Step 1 — Copy the AI Prompt</span>
     </button>
+
+    <!-- AI picker -->
+    <div class="mb-5">
+      <div class="text-xs text-gray-400 uppercase tracking-wide mb-3">Step 2 — Open your AI and paste it</div>
+      <div class="grid grid-cols-3 gap-3">
+        <a href="https://claude.ai" target="_blank"
+           class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
+          <div class="text-white text-sm font-semibold">Claude</div>
+          <div class="text-gray-500 text-xs mt-1">claude.ai</div>
+        </a>
+        <a href="https://chatgpt.com" target="_blank"
+           class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
+          <div class="text-white text-sm font-semibold">ChatGPT</div>
+          <div class="text-gray-500 text-xs mt-1">chatgpt.com</div>
+        </a>
+        <a href="https://grok.com" target="_blank"
+           class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
+          <div class="text-white text-sm font-semibold">Grok</div>
+          <div class="text-gray-500 text-xs mt-1">grok.com</div>
+        </a>
+      </div>
+    </div>
 
     <!-- Then steps -->
     <div class="space-y-3 mb-5">
       <div class="flex gap-3 items-start">
-        <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
-        <div>
-          <div class="text-white text-sm font-medium">Open Claude at claude.ai and paste it</div>
-          <div class="text-gray-400 text-xs">Claude will ask you questions — answer honestly and in detail. The more you share, the better your program.</div>
-        </div>
-      </div>
-      <div class="flex gap-3 items-start">
         <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
         <div>
-          <div class="text-white text-sm font-medium">Claude will tell you when it's ready</div>
-          <div class="text-gray-400 text-xs">It will ask you to say <span class="text-amber-400 font-medium">"generate my program"</span> when it has enough info. Say it and Claude will output your program.</div>
+          <div class="text-white text-sm font-medium">Your AI will ask you questions</div>
+          <div class="text-gray-400 text-xs">Answer honestly and in detail. The more you share, the better your program.</div>
         </div>
       </div>
       <div class="flex gap-3 items-start">
         <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">4</div>
         <div>
-          <div class="text-white text-sm font-medium">Copy Claude's entire response</div>
-          <div class="text-gray-400 text-xs">Copy everything — don't worry about extra text around the program. The app handles it.</div>
+          <div class="text-white text-sm font-medium">Your AI will tell you when it's ready</div>
+          <div class="text-gray-400 text-xs">It will ask you to say <span class="text-amber-400 font-medium">"generate my program"</span> when it has enough info.</div>
         </div>
       </div>
       <div class="flex gap-3 items-start">
         <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">5</div>
+        <div>
+          <div class="text-white text-sm font-medium">Copy the entire response</div>
+          <div class="text-gray-400 text-xs">Copy everything — don't worry about extra text. The app handles it.</div>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start">
+        <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">6</div>
         <div>
           <div class="text-white text-sm font-medium">Come back here and paste below</div>
           <div class="text-gray-400 text-xs">Tap Load Program and you're done.</div>
@@ -147,8 +169,8 @@ After the JSON, add this exact line on a new line so I know what to do next:
 JSON format:
 {"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise Name","sets":4,"target":"8-10 reps","unilateral":false,"prev":"","note":"Form tip here"}]},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
 
-    <div class="text-gray-500 text-xs mb-2 text-center">↓ Paste Claude's full response here after your conversation ↓</div>
-    <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-4" placeholder="Paste Claude's full response here..."></textarea>
+    <div class="text-gray-500 text-xs mb-2 text-center">↓ Paste your AI's full response here ↓</div>
+    <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-4" placeholder="Paste your AI's full response here..."></textarea>
     <button onclick="loadPastedProgram()" class="w-full bg-emerald-500 text-black font-semibold py-4 rounded-2xl mb-3">Load Program</button>
     <button onclick="closePasteModal()" class="w-full bg-gray-700 text-white py-4 rounded-2xl">Cancel</button>
   </div>
