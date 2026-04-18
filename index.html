@@ -163,11 +163,15 @@ When you feel you have a complete picture, tell me you are ready and ask me to s
 
 When I say "generate my program," output my complete workout program as a JSON object in exactly this format. If I want a mobility day, include it as a day with type "mobility" — include the actual mobility exercises you recommend for me specifically based on what I told you, not a generic list. Each mobility exercise should have a name, a detail field describing how long to hold or how many reps, and a note with any technique tips.
 
+For every strength exercise include:
+- "prev" field: what I likely did last session based on my history (or leave empty string if brand new to exercise entirely)
+- "rec" field: your recommended target weight and reps for this session — be specific, e.g. "135 lbs × 8" not just "increase weight"
+
 After the JSON, add this exact line on a new line so I know what to do next:
 ✅ Your program is ready! Copy this entire response, go back to the FitAI app, tap "Get My Program", paste it in, and tap Load Program.
 
 JSON format:
-{"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise Name","sets":4,"target":"8-10 reps","unilateral":false,"prev":"","note":"Form tip here"}]},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
+{"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise Name","sets":4,"target":"8-10 reps","unilateral":false,"prev":"120 lbs × 10","rec":"125 lbs × 10","note":"Form tip here"}]},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
 
     <div class="text-gray-500 text-xs mb-2 text-center">↓ Paste your AI's full response here ↓</div>
     <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-4" placeholder="Paste your AI's full response here..."></textarea>
@@ -428,8 +432,15 @@ function buildExerciseCard(ex) {
     <button onclick="openVideoModal('${ex.name}')" class="w-full text-left mb-1">
       <span class="text-cyan-400 font-semibold text-xl underline decoration-dotted decoration-cyan-700">${ex.name}</span>
     </button>
-    <div class="text-gray-400 text-sm mb-1">${ex.sets} sets × ${ex.target}</div>`;
-  if (ex.prev) html += `<div class="text-amber-400 text-xs mb-1">prev: ${ex.prev}</div>`;
+    <div class="text-gray-400 text-sm mb-2">${ex.sets} sets × ${ex.target}</div>`;
+
+  if (ex.prev || ex.rec) {
+    html += `<div class="flex gap-3 mb-2 flex-wrap">`;
+    if (ex.prev) html += `<div class="text-amber-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">prev: ${ex.prev}</div>`;
+    if (ex.rec) html += `<div class="text-emerald-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">target: ${ex.rec}</div>`;
+    html += `</div>`;
+  }
+
   if (ex.note) html += `<div class="text-gray-500 text-xs mb-4 leading-relaxed">${ex.note}</div>`;
   html += `<div id="sets-${cleanName}" class="space-y-3"></div>`;
   card.innerHTML = html;
@@ -802,10 +813,10 @@ function copyPrompt() {
   const prompt = document.getElementById('claudePrompt').textContent.trim();
   const btn = document.getElementById('copyPromptBtn');
   const success = () => {
-    btn.innerHTML = '✓ Copied! Now open Claude at claude.ai and paste it';
+    btn.innerHTML = '✓ Copied! Now open your AI and paste it';
     btn.classList.replace('bg-amber-500', 'bg-emerald-500');
     setTimeout(() => {
-      btn.innerHTML = 'Step 1 — Copy the Claude Prompt';
+      btn.innerHTML = 'Step 1 — Copy the AI Prompt';
       btn.classList.replace('bg-emerald-500', 'bg-amber-500');
     }, 3000);
   };
