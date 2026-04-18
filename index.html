@@ -385,9 +385,9 @@ function changeDay() {
 // ==================== SESSION / DAY ====================
 function changeSession() {
   currentSessionType = document.getElementById('sessionType').value;
-  // When user manually picks a session type, override the day type
   const wrapper = document.getElementById('daySelectWrapper');
-  wrapper.style.visibility = currentSessionType === 'strength' ? 'visible' : 'visible';
+  // Hide day dropdown for cardio, mobility and rest — only relevant for strength
+  wrapper.style.display = currentSessionType === 'strength' ? 'block' : 'none';
   buildWorkout();
 }
 
@@ -398,30 +398,25 @@ function buildWorkout() {
   content.innerHTML = '';
 
   const day = program.days[currentDayIndex];
-
-  // Session dropdown always wins — user can override any day's type manually
-  // But if session type hasn't been manually changed, use the day's type
   const effectiveType = currentSessionType;
 
-  // Sync dropdown to show current effective type
-  const sel = document.getElementById('sessionType');
-  if (sel && sel.value !== effectiveType) sel.value = effectiveType;
-
   if (effectiveType === 'strength') {
-    titleEl.textContent = day.name;
+    titleEl.textContent = day ? day.name : 'Strength Workout';
     content.appendChild(buildWarmCool('warmup'));
-    day.exercises.forEach(ex => content.appendChild(buildExerciseCard(ex)));
+    if (day && day.exercises) day.exercises.forEach(ex => content.appendChild(buildExerciseCard(ex)));
     content.appendChild(buildWarmCool('cooldown'));
     content.appendChild(buildNormatec());
     content.appendChild(buildNotes());
   } else if (effectiveType === 'cardio') {
-    titleEl.textContent = day ? day.name : 'Cardio Session';
+    titleEl.textContent = 'Cardio Session';
     content.appendChild(buildCardio());
     content.appendChild(buildNormatec());
     content.appendChild(buildNotes());
   } else if (effectiveType === 'mobility') {
-    titleEl.textContent = day ? day.name : 'Mobility & Stretch';
-    content.appendChild(buildMobility(day));
+    titleEl.textContent = 'Mobility & Stretch';
+    // Find the mobility day from the program if it exists, never use a strength day
+    const mobilityDay = program.days.find(d => d.type === 'mobility');
+    content.appendChild(buildMobility(mobilityDay || null));
     content.appendChild(buildNormatec());
     content.appendChild(buildNotes());
   } else {
