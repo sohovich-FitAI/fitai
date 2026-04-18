@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitAI">
+<title>FitAI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { -webkit-tap-highlight-color: transparent; }
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .slide-up { animation: slideUp 0.2s ease-out; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-bg { background: rgba(0,0,0,0.85); }
+</style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen pb-36 select-none">
+
+<!-- Toast -->
+<div id="toast" class="fixed top-6 left-4 right-4 z-50 hidden">
+  <div class="bg-emerald-500 text-black font-semibold text-center py-4 rounded-2xl text-base shadow-xl">Copied to clipboard!</div>
+</div>
+
+<!-- Video Modal -->
+<div id="videoModal" class="fixed inset-0 z-50 hidden modal-bg flex items-end">
+  <div class="w-full bg-gray-900 rounded-t-3xl p-6 slide-up">
+    <div class="flex justify-between items-center mb-5">
+      <h3 id="videoModalTitle" class="font-semibold text-lg text-white"></h3>
+      <button onclick="closeVideoModal()" class="text-gray-400 text-3xl leading-none">&times;</button>
+    </div>
+    <a id="videoLink" href="#" target="_blank" rel="noopener"
+       class="block w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-5 rounded-2xl text-center text-base mb-3">
+      ▶ Watch Tutorial Video
+    </a>
+    <a id="searchLink" href="#" target="_blank" rel="noopener"
+       class="block w-full bg-gray-700 text-white font-semibold py-5 rounded-2xl text-center text-base">
+      🔍 Search YouTube
+    </a>
+  </div>
+</div>
+
+<!-- Rest Timer Modal -->
+<div id="timerModal" class="fixed inset-0 z-50 hidden modal-bg flex items-center justify-center">
+  <div class="bg-gray-900 rounded-3xl p-8 mx-4 w-full max-w-sm slide-up text-center">
+    <div class="text-gray-400 text-sm mb-2">Rest Timer</div>
+    <div id="timerDisplay" class="text-7xl font-mono font-bold text-white mb-6">1:30</div>
+    <div class="flex gap-3 justify-center mb-6">
+      <button onclick="setTimer(60)" class="bg-gray-800 px-4 py-2 rounded-xl text-sm">60s</button>
+      <button onclick="setTimer(90)" class="bg-gray-700 px-4 py-2 rounded-xl text-sm font-semibold">90s</button>
+      <button onclick="setTimer(120)" class="bg-gray-800 px-4 py-2 rounded-xl text-sm">2m</button>
+      <button onclick="setTimer(180)" class="bg-gray-800 px-4 py-2 rounded-xl text-sm">3m</button>
+    </div>
+    <div class="flex gap-3 mb-4">
+      <button id="timerStartBtn" onclick="toggleTimer()" class="flex-1 bg-emerald-500 text-black font-semibold py-4 rounded-2xl">Start</button>
+      <button onclick="resetTimer()" class="bg-gray-700 px-6 py-4 rounded-2xl">Reset</button>
+    </div>
+    <button onclick="closeTimer()" class="w-full bg-gray-800 py-4 rounded-2xl text-gray-400">Close</button>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div id="historyModal" class="fixed inset-0 z-50 hidden modal-bg overflow-y-auto">
+  <div class="min-h-screen p-4">
+    <div class="bg-gray-900 rounded-3xl p-6 max-w-xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold">Workout History</h2>
+        <button onclick="closeHistory()" class="text-gray-400 text-3xl leading-none">&times;</button>
+      </div>
+      <div id="historyContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Paste Program Modal -->
+<div id="pasteModal" class="fixed inset-0 z-50 hidden modal-bg flex items-end">
+  <div class="w-full bg-gray-900 rounded-t-3xl p-6 slide-up overflow-y-auto" style="max-height:90vh">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="font-semibold text-lg">Get Your Program</h3>
+      <button onclick="closePasteModal()" class="text-gray-400 text-3xl leading-none">&times;</button>
+    </div>
+
+    <!-- Big prominent copy button FIRST -->
+    <button onclick="copyPrompt()" id="copyPromptBtn"
+            class="w-full bg-amber-500 text-black font-bold py-5 rounded-2xl text-base mb-5 flex items-center justify-center gap-2">
+      <span>Step 1 — Copy the Claude Prompt</span>
+    </button>
+
+    <!-- Then steps -->
+    <div class="space-y-3 mb-5">
+      <div class="flex gap-3 items-start">
+        <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+        <div>
+          <div class="text-white text-sm font-medium">Open Claude at claude.ai and paste it</div>
+          <div class="text-gray-400 text-xs">Claude will ask you questions — answer honestly and in detail. The more you share, the better your program.</div>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start">
+        <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+        <div>
+          <div class="text-white text-sm font-medium">Claude will tell you when it's ready</div>
+          <div class="text-gray-400 text-xs">It will ask you to say <span class="text-amber-400 font-medium">"generate my program"</span> when it has enough info. Say it and Claude will output your program.</div>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start">
+        <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">4</div>
+        <div>
+          <div class="text-white text-sm font-medium">Copy Claude's entire response</div>
+          <div class="text-gray-400 text-xs">Copy everything — don't worry about extra text around the program. The app handles it.</div>
+        </div>
+      </div>
+      <div class="flex gap-3 items-start">
+        <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">5</div>
+        <div>
+          <div class="text-white text-sm font-medium">Come back here and paste below</div>
+          <div class="text-gray-400 text-xs">Tap Load Program and you're done.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden prompt text -->
+    <div id="claudePrompt" class="hidden">I want you to act as my personal trainer and build me a completely personalized workout program. This is not a generic program — I need you to truly understand me before you build anything.
+
+Before creating my program, ask me everything you need to know. Make sure you ask about:
+- My age, current weight, height, and body composition goals
+- Any health conditions — high blood pressure, heart conditions, diabetes, gout, cholesterol, or anything else relevant to exercise safety
+- Any injuries, chronic pain, or physical limitations — current or past — including specific joints, muscles, or movements that cause pain
+- Any medications I take that might affect exercise capacity or heart rate
+- Whether I am training for any specific sport, event, or activity — football, wrestling, running, tennis, hiking, a wedding, anything. This will shape the entire program.
+- My honest current fitness level and history — have I worked out before, how recently, what has worked, what hasn't
+- My real goals beyond just losing weight — what do I actually want my body and life to look like in 6 months
+- My schedule — how many days per week I can realistically commit, which days work best, and how much time per session
+- Where I work out — commercial gym, home gym, specific equipment available
+- My flexibility and mobility — do I feel tight anywhere, do I have limited range of motion in any joints, do I want a dedicated mobility or stretching day built into my program, and are there specific areas I want to improve (hips, hamstrings, shoulders, back, etc.)
+- Anything else that would help you design the safest and most effective program specifically for me
+
+Ask follow-up questions and dig deeper where needed. Do not rush. The quality of my program depends entirely on how well you understand my situation.
+
+When you feel you have a complete picture, tell me you are ready and ask me to say "generate my program."
+
+When I say "generate my program," output my complete workout program as a JSON object in exactly this format. If I want a mobility day, include it as a day with type "mobility" — include the actual mobility exercises you recommend for me specifically based on what I told you, not a generic list. Each mobility exercise should have a name, a detail field describing how long to hold or how many reps, and a note with any technique tips.
+
+After the JSON, add this exact line on a new line so I know what to do next:
+✅ Your program is ready! Copy this entire response, go back to the FitAI app, tap "Get My Program", paste it in, and tap Load Program.
+
+JSON format:
+{"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise Name","sets":4,"target":"8-10 reps","unilateral":false,"prev":"","note":"Form tip here"}]},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
+
+    <div class="text-gray-500 text-xs mb-2 text-center">↓ Paste Claude's full response here after your conversation ↓</div>
+    <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-4" placeholder="Paste Claude's full response here..."></textarea>
+    <button onclick="loadPastedProgram()" class="w-full bg-emerald-500 text-black font-semibold py-4 rounded-2xl mb-3">Load Program</button>
+    <button onclick="closePasteModal()" class="w-full bg-gray-700 text-white py-4 rounded-2xl">Cancel</button>
+  </div>
+</div>
+
+<!-- Main App -->
+<div class="max-w-xl mx-auto p-4">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6 pt-2">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tighter">FitAI</h1>
+      <p id="dateHeader" class="text-gray-400 text-sm mt-1"></p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="openHistory()" class="bg-gray-800 px-4 py-2 rounded-2xl text-sm text-gray-300">History</button>
+      <button onclick="openTimer()" class="bg-gray-800 px-4 py-2 rounded-2xl text-sm text-gray-300">⏱ Timer</button>
+    </div>
+  </div>
+
+  <!-- Paste Program Button -->
+  <button onclick="openPasteModal()"
+          class="w-full mb-5 bg-amber-500 hover:bg-amber-600 text-black font-semibold py-4 rounded-3xl text-base">
+    📋 Paste New Program
+  </button>
+
+  <!-- Session Type + Day -->
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div>
+      <label class="text-xs text-gray-400 block mb-2 uppercase tracking-wide">Session Type</label>
+      <select id="sessionType" onchange="changeSession()" class="w-full bg-gray-900 text-white rounded-2xl px-4 py-4 text-base border border-gray-700">
+        <option value="strength">Strength</option>
+        <option value="cardio">Cardio</option>
+        <option value="mobility">Mobility</option>
+        <option value="rest">Rest Day</option>
+      </select>
+    </div>
+    <div id="daySelectWrapper">
+      <label class="text-xs text-gray-400 block mb-2 uppercase tracking-wide">Day</label>
+      <select id="daySelect" onchange="changeDay()" class="w-full bg-gray-900 text-white rounded-2xl px-4 py-4 text-base border border-gray-700"></select>
+    </div>
+  </div>
+
+  <h2 id="workoutTitle" class="text-2xl font-semibold mb-6"></h2>
+
+  <div id="workoutContent" class="space-y-6"></div>
+
+</div>
+
+<!-- Bottom Bar -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-gray-950 border-t border-gray-800">
+  <div class="max-w-xl mx-auto flex gap-3">
+    <button onclick="copyLog()" class="flex-1 bg-white text-black font-semibold py-5 rounded-3xl text-base shadow-xl">
+      Copy & Share
+    </button>
+    <button onclick="saveWorkout()" class="bg-emerald-500 text-black font-semibold px-6 py-5 rounded-3xl text-base shadow-xl">
+      Save
+    </button>
+  </div>
+</div>
+
+<script>
+// ==================== VIDEO LINKS ====================
+const VIDEO_LINKS = {
+  "Hack Squat Machine": "https://www.youtube.com/watch?v=0tn5K9NlCfo",
+  "Single Leg Curl": "https://www.youtube.com/watch?v=1Tq3QdYUuHs",
+  "Hip Abductor Machine": "https://www.youtube.com/watch?v=kCdABiXQ6G8",
+  "Standing Calf Raise": "https://www.youtube.com/watch?v=-M4-G8p1fCI",
+  "Hanging Knee Raises": "https://www.youtube.com/watch?v=Pr1ieGZ5atk",
+  "Cable Pallof Press": "https://www.youtube.com/watch?v=AH_QZLm_0-s",
+  "Wide Grip Cable Lat Pulldown": "https://www.youtube.com/watch?v=JERmYKnIGnc",
+  "Chest Supported Dumbbell Row": "https://www.youtube.com/watch?v=T3N-TO4reLQ",
+  "Landmine Press": "https://www.youtube.com/watch?v=fRgSAJJcVOo",
+  "Rear Delt Fly Machine": "https://www.youtube.com/watch?v=EA7u4Q_8HQ0",
+  "Rope Pushdown": "https://www.youtube.com/watch?v=vB5OHsJ3EME",
+  "Preacher Curl Machine": "https://www.youtube.com/watch?v=fIWP-FRFNU0",
+  "Dumbbell Romanian Deadlift": "https://www.youtube.com/watch?v=hCDzSR6bW10",
+  "Bulgarian Split Squat": "https://www.youtube.com/watch?v=2C-uNgKwPLE",
+  "Incline Dumbbell Press": "https://www.youtube.com/watch?v=8iPEnn-ltC8",
+  "Wide Grip Seated Cable Row": "https://www.youtube.com/watch?v=GZbfZ033f74",
+  "Farmer's Carry": "https://www.youtube.com/watch?v=rt17lmnaLSM"
+};
+
+// ==================== DEFAULT PROGRAM ====================
+const DEFAULT_PROGRAM = {
+  days: [
+    { id: "mon", name: "Day 1 – Lower Focus", exercises: [
+      { name: "Hack Squat Machine", sets: 4, target: "6-8 reps", unilateral: false, prev: "New exercise", note: "Start conservative, form first. Feet shoulder width, controlled descent." },
+      { name: "Single Leg Curl", sets: 4, target: "10-12 reps/side", unilateral: true, prev: "120 lbs × 10-12", note: "Weaker left leg first each set. Start 60-70 lbs." },
+      { name: "Hip Abductor Machine", sets: 3, target: "15-20 reps", unilateral: false, prev: "New exercise", note: "Start 50-70 lbs. Slow, squeeze glutes at top. Therapeutic for IT band." },
+      { name: "Standing Calf Raise", sets: 3, target: "15-20 reps", unilateral: false, prev: "140 lbs × 15", note: "Start 140, build to 150+." },
+      { name: "Hanging Knee Raises", sets: 2, target: "10-12 reps", unilateral: false, prev: "New exercise", note: "Captain's chair. Slow and controlled, no swinging." },
+      { name: "Cable Pallof Press", sets: 2, target: "10-12 reps/side", unilateral: true, prev: "New exercise", note: "Start 20-30 lbs. Brace core hard against the cable pull." }
+    ]},
+    { id: "wed", name: "Day 2 – Upper Focus", exercises: [
+      { name: "Wide Grip Cable Lat Pulldown", sets: 4, target: "6-8 reps", unilateral: false, prev: "Assisted pull-ups 125-130 assist", note: "Start 130-140 lbs. Drive elbows down and back, not biceps." },
+      { name: "Chest Supported Dumbbell Row", sets: 4, target: "10-12 reps/side", unilateral: true, prev: "Single arm cable row 55 lbs", note: "Incline bench 45°, chest down. Start 50-55 lbs. Takes lower back out." },
+      { name: "Landmine Press", sets: 3, target: "8-10 reps/side", unilateral: true, prev: "Overhead press 80-90 lbs", note: "Start very light, 25-35 lbs on bar. Single arm, press up and forward." },
+      { name: "Rear Delt Fly Machine", sets: 3, target: "12-15 reps", unilateral: false, prev: "65-70 lbs", note: "Start 65-70 lbs. Elbow safe." },
+      { name: "Rope Pushdown", sets: 2, target: "12-15 reps", unilateral: false, prev: "70-80 lbs", note: "Start 70-75 lbs." },
+      { name: "Preacher Curl Machine", sets: 2, target: "10-12 reps", unilateral: false, prev: "Cable curl 60-70 lbs", note: "Start 40-50 lbs. Full stretch at bottom, squeeze at top. Elbow on pad throughout." }
+    ]},
+    { id: "fri", name: "Day 3 – Full Body Hybrid", exercises: [
+      { name: "Dumbbell Romanian Deadlift", sets: 4, target: "6-8 reps", unilateral: false, prev: "140 lbs total (70/hand) × 8", note: "Start 140 lbs total. Hinge at hips, slow 3-4 sec eccentric." },
+      { name: "Bulgarian Split Squat", sets: 4, target: "8-10 reps/side", unilateral: true, prev: "40 lbs goblet hold × 10/side", note: "Legs fresher on Friday. Start 25-30 lbs." },
+      { name: "Incline Dumbbell Press", sets: 3, target: "8-10 reps", unilateral: false, prev: "Flat DB press 50/hand × 10-12", note: "Bench 30-45°. Start 45-50 lbs per hand." },
+      { name: "Wide Grip Seated Cable Row", sets: 3, target: "10-12 reps", unilateral: false, prev: "DB rows 55 lbs/hand", note: "Start 100-110 lbs. Drive elbows out wide, squeeze shoulder blades together." },
+      { name: "Farmer's Carry", sets: 3, target: "30 sec", unilateral: false, prev: "30-45 lbs/hand × 25 sec", note: "Start 40-50 lbs per hand. Shoulders back, core tight." }
+    ]}
+  ]
+};
+
+const MOBILITY_ROUTINE = [
+  { name: "Foam roller – outer left thigh", detail: "90 sec slow, above and below tight spot" },
+  { name: "Standing IT band stretch", detail: "60 sec each side, 2 rounds" },
+  { name: "Figure 4 stretch", detail: "60 sec each side, 2 rounds" },
+  { name: "Clamshells with band", detail: "2 × 20 each side, slow and controlled" },
+  { name: "Child's pose with side reach", detail: "60 sec each side" },
+  { name: "Kneeling hip flexor stretch", detail: "45 sec each side, 2 rounds" },
+  { name: "Supine IT band stretch", detail: "60 sec each side" },
+  { name: "Supine spinal twist", detail: "45 sec each side" },
+  { name: "Cat-cow", detail: "10 breaths" },
+  { name: "Calf stretch – wall", detail: "45 sec each side" },
+  { name: "Deep breathing", detail: "Lie flat, 3 min" }
+];
+
+// ==================== STATE ====================
+let program = loadProgram();
+let currentDayIndex = 0;
+let currentSessionType = "strength";
+let mobilityTimers = {};
+let timerInterval = null;
+let timerSeconds = 90;
+let timerOriginal = 90;
+let timerRunning = false;
+let workoutData = {};
+
+// ==================== STORAGE ====================
+function loadProgram() {
+  try {
+    const saved = localStorage.getItem('fitai_program');
+    return saved ? JSON.parse(saved) : DEFAULT_PROGRAM;
+  } catch(e) { return DEFAULT_PROGRAM; }
+}
+
+function saveProgram(p) {
+  try { localStorage.setItem('fitai_program', JSON.stringify(p)); } catch(e) {}
+}
+
+function loadWorkoutData() {
+  try {
+    const saved = localStorage.getItem('fitai_current');
+    return saved ? JSON.parse(saved) : {};
+  } catch(e) { return {}; }
+}
+
+function persistWorkoutData() {
+  try { localStorage.setItem('fitai_current', JSON.stringify(workoutData)); } catch(e) {}
+}
+
+function getHistory() {
+  try {
+    const saved = localStorage.getItem('fitai_history');
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveHistory(history) {
+  try { localStorage.setItem('fitai_history', JSON.stringify(history)); } catch(e) {}
+}
+
+// ==================== INIT ====================
+function init() {
+  workoutData = loadWorkoutData();
+  document.getElementById('dateHeader').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  populateDaySelect();
+  buildWorkout();
+}
+
+function populateDaySelect() {
+  const sel = document.getElementById('daySelect');
+  sel.innerHTML = '';
+  program.days.forEach((d, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = d.name;
+    sel.appendChild(opt);
+  });
+  sel.value = currentDayIndex;
+
+  // Auto-set session type based on selected day's type
+  const day = program.days[currentDayIndex];
+  if (day && day.type) {
+    currentSessionType = day.type;
+    document.getElementById('sessionType').value = day.type;
+    const wrapper = document.getElementById('daySelectWrapper');
+    wrapper.style.visibility = day.type === 'strength' ? 'visible' : 'visible';
+  }
+}
+
+// ==================== SESSION / DAY ====================
+function changeSession() {
+  currentSessionType = document.getElementById('sessionType').value;
+  const wrapper = document.getElementById('daySelectWrapper');
+  wrapper.style.visibility = currentSessionType === 'strength' ? 'visible' : 'hidden';
+  buildWorkout();
+}
+
+function changeDay() {
+  currentDayIndex = parseInt(document.getElementById('daySelect').value);
+  buildWorkout();
+}
+
+// ==================== BUILD WORKOUT ====================
+function buildWorkout() {
+  const content = document.getElementById('workoutContent');
+  const titleEl = document.getElementById('workoutTitle');
+  content.innerHTML = '';
+
+  const day = program.days[currentDayIndex];
+  const dayType = day ? (day.type || 'strength') : currentSessionType;
+  const effectiveType = currentSessionType !== 'strength' ? currentSessionType : dayType;
+
+  if (effectiveType === 'strength') {
+    titleEl.textContent = day.name;
+    content.appendChild(buildWarmCool('warmup'));
+    day.exercises.forEach(ex => content.appendChild(buildExerciseCard(ex)));
+    content.appendChild(buildWarmCool('cooldown'));
+    content.appendChild(buildNormatec());
+    content.appendChild(buildNotes());
+  } else if (effectiveType === 'cardio') {
+    titleEl.textContent = 'Cardio Session';
+    content.appendChild(buildCardio());
+    content.appendChild(buildNormatec());
+    content.appendChild(buildNotes());
+  } else if (effectiveType === 'mobility') {
+    titleEl.textContent = day ? day.name : 'Mobility & Stretch';
+    content.appendChild(buildMobility(day));
+    content.appendChild(buildNormatec());
+    content.appendChild(buildNotes());
+  } else {
+    titleEl.textContent = 'Rest Day';
+    content.innerHTML = '<div class="bg-gray-900 rounded-3xl p-16 text-center text-2xl">Rest Day 💪<br><span class="text-sm text-gray-400 block mt-4">Recover well. Normatec recommended.</span></div>';
+    content.appendChild(buildNormatec());
+    content.appendChild(buildNotes());
+  }
+}
+
+function buildExerciseCard(ex) {
+  const card = document.createElement('div');
+  card.className = 'bg-gray-900 rounded-3xl p-6';
+  const cleanName = ex.name.replace(/\W+/g, '');
+
+  let html = `
+    <button onclick="openVideoModal('${ex.name}')" class="w-full text-left mb-1">
+      <span class="text-cyan-400 font-semibold text-xl underline decoration-dotted decoration-cyan-700">${ex.name}</span>
+    </button>
+    <div class="text-gray-400 text-sm mb-1">${ex.sets} sets × ${ex.target}</div>`;
+  if (ex.prev) html += `<div class="text-amber-400 text-xs mb-1">prev: ${ex.prev}</div>`;
+  if (ex.note) html += `<div class="text-gray-500 text-xs mb-4 leading-relaxed">${ex.note}</div>`;
+  html += `<div id="sets-${cleanName}" class="space-y-3"></div>`;
+  card.innerHTML = html;
+
+  const setsContainer = card.querySelector(`#sets-${cleanName}`);
+  const totalSets = ex.unilateral ? ex.sets * 2 : ex.sets;
+  for (let i = 1; i <= totalSets; i++) {
+    const setNum = ex.unilateral ? Math.ceil(i / 2) : i;
+    const side = ex.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
+    const wKey = `${cleanName}-w${i}`;
+    const rKey = `${cleanName}-r${i}`;
+    const savedW = workoutData[wKey] || '';
+    const savedR = workoutData[rKey] || '';
+
+    const setDiv = document.createElement('div');
+    setDiv.className = 'bg-gray-800 rounded-2xl p-4';
+    setDiv.innerHTML = `
+      <div class="text-xs text-gray-400 mb-3">Set ${setNum}${side}</div>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <input type="number" inputmode="decimal" id="${wKey}" value="${savedW}" placeholder="Weight (lbs)"
+               class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+               oninput="saveInput('${wKey}', this.value)">
+        <input type="number" inputmode="decimal" id="${rKey}" value="${savedR}" placeholder="Reps"
+               class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+               oninput="saveInput('${rKey}', this.value)">
+      </div>
+      <div class="flex gap-3">
+        <button onclick="markDone(this, '${ex.name}', '${setNum}${side}')"
+                class="flex-1 bg-emerald-500 text-black font-semibold py-4 rounded-2xl text-sm">DONE</button>
+        <button onclick="repeatLast('${cleanName}', ${i})"
+                class="bg-gray-700 px-6 py-4 rounded-2xl text-xl">↺</button>
+        <button onclick="openTimer()"
+                class="bg-gray-700 px-4 py-4 rounded-2xl text-sm">⏱</button>
+      </div>`;
+    setsContainer.appendChild(setDiv);
+  }
+  return card;
+}
+
+function buildWarmCool(type) {
+  const label = type === 'warmup' ? 'Warm-up' : 'Cool-down';
+  const defaultText = type === 'warmup' ? program.days[currentDayIndex].warmup || '5 min incline walk' : '5 min walk + stretches';
+  const minKey = `${type}-min`;
+  const incKey = `${type}-inc`;
+  const spdKey = `${type}-spd`;
+  const notKey = `${type}-note`;
+
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900 rounded-3xl p-6';
+  div.innerHTML = `
+    <div class="text-white font-semibold mb-1">${label}</div>
+    <div class="text-gray-500 text-xs mb-4">${defaultText}</div>
+    <div class="grid grid-cols-3 gap-3 mb-3">
+      <div><div class="text-xs text-gray-400 mb-1">Minutes</div>
+        <input type="number" inputmode="decimal" id="${minKey}" value="${workoutData[minKey]||''}" placeholder="min"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('${minKey}', this.value)"></div>
+      <div><div class="text-xs text-gray-400 mb-1">Incline %</div>
+        <input type="number" inputmode="decimal" id="${incKey}" value="${workoutData[incKey]||''}" placeholder="%"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('${incKey}', this.value)"></div>
+      <div><div class="text-xs text-gray-400 mb-1">Speed mph</div>
+        <input type="number" inputmode="decimal" id="${spdKey}" value="${workoutData[spdKey]||''}" placeholder="mph"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('${spdKey}', this.value)"></div>
+    </div>
+    <input type="text" id="${notKey}" value="${workoutData[notKey]||''}" placeholder="Notes (bike, elliptical...)"
+           class="w-full bg-gray-800 rounded-xl px-4 py-3 text-sm text-white"
+           oninput="saveInput('${notKey}', this.value)">`;
+  return div;
+}
+
+function buildCardio() {
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900 rounded-3xl p-6';
+  div.innerHTML = `
+    <div class="text-white font-semibold mb-4">Cardio Session</div>
+    <div class="text-gray-500 text-xs mb-4">Elliptical, bike, or incline walk — target 110-130 bpm</div>
+    <div class="grid grid-cols-2 gap-3 mb-3">
+      <div><div class="text-xs text-gray-400 mb-1">Minutes</div>
+        <input type="number" inputmode="decimal" id="cardio-min" value="${workoutData['cardio-min']||''}" placeholder="min"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('cardio-min', this.value)"></div>
+      <div><div class="text-xs text-gray-400 mb-1">Avg HR (bpm)</div>
+        <input type="number" inputmode="decimal" id="cardio-hr" value="${workoutData['cardio-hr']||''}" placeholder="bpm"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('cardio-hr', this.value)"></div>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mb-3">
+      <div><div class="text-xs text-gray-400 mb-1">Incline %</div>
+        <input type="number" inputmode="decimal" id="cardio-inc" value="${workoutData['cardio-inc']||''}" placeholder="%"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('cardio-inc', this.value)"></div>
+      <div><div class="text-xs text-gray-400 mb-1">Speed mph</div>
+        <input type="number" inputmode="decimal" id="cardio-spd" value="${workoutData['cardio-spd']||''}" placeholder="mph"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+               oninput="saveInput('cardio-spd', this.value)"></div>
+      <div><div class="text-xs text-gray-400 mb-1">Machine</div>
+        <input type="text" id="cardio-type" value="${workoutData['cardio-type']||''}" placeholder="type"
+               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-sm text-white"
+               oninput="saveInput('cardio-type', this.value)"></div>
+    </div>`;
+  return div;
+}
+
+function buildMobility(programDay) {
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900 rounded-3xl p-6';
+
+  // Use program-defined mobility exercises if available, else fall back to default
+  const routine = (programDay && programDay.exercises && programDay.exercises.length)
+    ? programDay.exercises.map(ex => ({ name: ex.name, detail: ex.detail || ex.target || '', note: ex.note || '' }))
+    : MOBILITY_ROUTINE;
+
+  const doneCount = routine.filter((_, i) => workoutData[`mob-${i}`] === '1').length;
+
+  let html = `
+    <div class="flex justify-between items-center mb-2">
+      <div class="text-white font-semibold">Mobility Routine</div>
+      <div class="text-gray-400 text-sm mobility-count">${doneCount}/${routine.length}</div>
+    </div>
+    <div class="space-y-3 mb-2">`;
+
+  routine.forEach((item, i) => {
+    const checked = workoutData[`mob-${i}`] === '1';
+    const logged = workoutData[`mob-time-${i}`] || '';
+    html += `
+      <div id="mob-item-${i}" class="bg-gray-800 rounded-2xl p-4 ${checked ? 'opacity-60' : ''}">
+        <div class="flex items-center gap-3 mb-3">
+          <div onclick="toggleMobility(${i})" id="mob-check-${i}"
+               class="w-7 h-7 rounded-full border-2 ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center flex-shrink-0 cursor-pointer">
+            ${checked ? '<span class="text-black text-sm font-bold">✓</span>' : ''}
+          </div>
+          <div class="flex-1">
+            <div class="text-white text-sm font-medium">${item.name}</div>
+            <div class="text-gray-500 text-xs">${item.detail}</div>
+            ${item.note ? `<div class="text-gray-600 text-xs mt-1">${item.note}</div>` : ''}
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="mob-start-${i}" onclick="startMobTimer(${i})"
+                  class="flex-1 bg-cyan-600 text-white font-semibold py-3 rounded-xl text-sm">
+            Start
+          </button>
+          <button id="mob-stop-${i}" onclick="stopMobTimer(${i})"
+                  class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm hidden">
+            Done
+          </button>
+          <div id="mob-display-${i}" class="text-cyan-400 font-mono text-lg font-bold min-w-12 text-center">
+            ${logged || '0:00'}
+          </div>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+  div.innerHTML = html;
+  return div;
+}
+
+function buildNormatec() {
+  const checked = workoutData['normatec'] === '1';
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900 rounded-3xl p-5';
+  div.innerHTML = `
+    <div onclick="toggleNormatec()" id="normatec-row"
+         class="flex items-center justify-between cursor-pointer">
+      <div>
+        <div class="text-white font-medium">Normatec Session</div>
+        <div class="text-gray-500 text-xs">Recovery compression</div>
+      </div>
+      <div id="normatec-check" class="w-8 h-8 rounded-full border-2 ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center">
+        ${checked ? '<span class="text-black font-bold">✓</span>' : ''}
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildNotes() {
+  const div = document.createElement('div');
+  div.className = 'bg-gray-900 rounded-3xl p-6';
+  div.innerHTML = `
+    <div class="text-white font-medium mb-3">Workout Notes</div>
+    <textarea id="workout-notes" rows="3" placeholder="How did it feel? Any pain? Adjustments needed?"
+              class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white resize-none"
+              oninput="saveInput('workout-notes', this.value)">${workoutData['workout-notes']||''}</textarea>`;
+  return div;
+}
+
+// ==================== INTERACTIONS ====================
+function saveInput(key, value) {
+  workoutData[key] = value;
+  persistWorkoutData();
+}
+
+function markDone(btn, exName, setInfo) {
+  btn.textContent = '✓';
+  btn.classList.remove('bg-emerald-500');
+  btn.classList.add('bg-gray-600', 'text-gray-300');
+  openTimer();
+}
+
+function repeatLast(cleanName, i) {
+  if (i <= 1) return;
+  const prevW = document.getElementById(`${cleanName}-w${i-1}`)?.value;
+  const prevR = document.getElementById(`${cleanName}-r${i-1}`)?.value;
+  if (prevW) { document.getElementById(`${cleanName}-w${i}`).value = prevW; saveInput(`${cleanName}-w${i}`, prevW); }
+  if (prevR) { document.getElementById(`${cleanName}-r${i}`).value = prevR; saveInput(`${cleanName}-r${i}`, prevR); }
+}
+
+function toggleMobility(i) {
+  const isChecked = workoutData[`mob-${i}`] === '1';
+  workoutData[`mob-${i}`] = isChecked ? '0' : '1';
+  persistWorkoutData();
+  const item = document.getElementById(`mob-item-${i}`);
+  const check = document.getElementById(`mob-check-${i}`);
+  if (item) item.classList.toggle('opacity-60', !isChecked);
+  if (check) {
+    check.className = `w-7 h-7 rounded-full border-2 ${!isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center flex-shrink-0 cursor-pointer`;
+    check.innerHTML = !isChecked ? '<span class="text-black text-sm font-bold">✓</span>' : '';
+  }
+}
+
+const mobTimers = {};
+
+function startMobTimer(i) {
+  if (mobTimers[i]) clearInterval(mobTimers[i]);
+  let seconds = 0;
+  document.getElementById(`mob-start-${i}`).classList.add('hidden');
+  document.getElementById(`mob-stop-${i}`).classList.remove('hidden');
+  document.getElementById(`mob-display-${i}`).textContent = '0:00';
+  mobTimers[i] = setInterval(() => {
+    seconds++;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    const display = document.getElementById(`mob-display-${i}`);
+    if (display) display.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+}
+
+function stopMobTimer(i) {
+  if (mobTimers[i]) { clearInterval(mobTimers[i]); delete mobTimers[i]; }
+  const display = document.getElementById(`mob-display-${i}`);
+  const timeLogged = display ? display.textContent : '';
+  document.getElementById(`mob-start-${i}`).classList.remove('hidden');
+  document.getElementById(`mob-stop-${i}`).classList.add('hidden');
+  workoutData[`mob-time-${i}`] = timeLogged;
+  workoutData[`mob-${i}`] = '1';
+  persistWorkoutData();
+  const item = document.getElementById(`mob-item-${i}`);
+  const check = document.getElementById(`mob-check-${i}`);
+  if (item) item.classList.add('opacity-60');
+  if (check) {
+    check.className = 'w-7 h-7 rounded-full border-2 bg-emerald-500 border-emerald-500 flex items-center justify-center flex-shrink-0 cursor-pointer';
+    check.innerHTML = '<span class="text-black text-sm font-bold">✓</span>';
+  }
+}
+
+function toggleNormatec() {
+  const isChecked = workoutData['normatec'] === '1';
+  workoutData['normatec'] = isChecked ? '0' : '1';
+  persistWorkoutData();
+  const check = document.getElementById('normatec-check');
+  if (check) {
+    check.className = `w-8 h-8 rounded-full border-2 ${!isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center`;
+    check.innerHTML = !isChecked ? '<span class="text-black font-bold">✓</span>' : '';
+  }
+}
+
+// ==================== VIDEO MODAL ====================
+function openVideoModal(name) {
+  const url = VIDEO_LINKS[name];
+  const search = `https://www.youtube.com/results?search_query=${encodeURIComponent(name + ' exercise form')}`;
+  document.getElementById('videoModalTitle').textContent = name;
+  document.getElementById('videoLink').href = url || search;
+  document.getElementById('videoLink').textContent = url ? '▶ Watch Tutorial Video' : '▶ Search YouTube';
+  document.getElementById('searchLink').href = search;
+  document.getElementById('videoModal').classList.remove('hidden');
+}
+
+function closeVideoModal() {
+  document.getElementById('videoModal').classList.add('hidden');
+}
+
+// ==================== TIMER ====================
+function openTimer() {
+  document.getElementById('timerModal').classList.remove('hidden');
+  updateTimerDisplay();
+}
+
+function closeTimer() {
+  document.getElementById('timerModal').classList.add('hidden');
+}
+
+function setTimer(s) {
+  timerOriginal = s;
+  timerSeconds = s;
+  timerRunning = false;
+  clearInterval(timerInterval);
+  document.getElementById('timerStartBtn').textContent = 'Start';
+  updateTimerDisplay();
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('timerStartBtn').textContent = 'Resume';
+  } else {
+    timerRunning = true;
+    document.getElementById('timerStartBtn').textContent = 'Pause';
+    timerInterval = setInterval(() => {
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timerStartBtn').textContent = 'Start';
+        document.getElementById('timerDisplay').textContent = 'Go!';
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        return;
+      }
+      timerSeconds--;
+      updateTimerDisplay();
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = timerOriginal;
+  document.getElementById('timerStartBtn').textContent = 'Start';
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// ==================== HISTORY ====================
+function openHistory() {
+  const history = getHistory();
+  const content = document.getElementById('historyContent');
+  if (!history.length) {
+    content.innerHTML = '<div class="text-gray-500 text-center py-8">No workouts saved yet.</div>';
+  } else {
+    content.innerHTML = history.map(w => `
+      <div class="bg-gray-800 rounded-2xl p-4 mb-4">
+        <div class="text-gray-400 text-xs mb-2">${w.date}</div>
+        <pre class="text-white text-xs whitespace-pre-wrap font-sans leading-relaxed">${w.log}</pre>
+      </div>`).join('');
+  }
+  document.getElementById('historyModal').classList.remove('hidden');
+}
+
+function closeHistory() {
+  document.getElementById('historyModal').classList.add('hidden');
+}
+
+// ==================== PASTE PROGRAM ====================
+function openPasteModal() {
+  document.getElementById('pasteModal').classList.remove('hidden');
+}
+
+function closePasteModal() {
+  document.getElementById('pasteModal').classList.add('hidden');
+}
+
+function copyPrompt() {
+  const prompt = document.getElementById('claudePrompt').textContent.trim();
+  const btn = document.getElementById('copyPromptBtn');
+  const success = () => {
+    btn.innerHTML = '✓ Copied! Now open Claude at claude.ai and paste it';
+    btn.classList.replace('bg-amber-500', 'bg-emerald-500');
+    setTimeout(() => {
+      btn.innerHTML = 'Step 1 — Copy the Claude Prompt';
+      btn.classList.replace('bg-emerald-500', 'bg-amber-500');
+    }, 3000);
+  };
+  try {
+    navigator.clipboard.writeText(prompt).then(success).catch(() => fallbackCopyPrompt(prompt, success));
+  } catch(e) { fallbackCopyPrompt(prompt, success); }
+}
+
+function fallbackCopyPrompt(text, callback) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  if (callback) callback();
+}
+
+function loadPastedProgram() {
+  try {
+    let text = document.getElementById('programPasteArea').value.trim();
+
+    // Try to extract JSON from anywhere in the response
+    // Handle ```json code blocks
+    const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlock) text = codeBlock[1].trim();
+
+    // Find the outermost { } JSON object if not a clean JSON string
+    if (!text.startsWith('{')) {
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start !== -1 && end !== -1) text = text.slice(start, end + 1);
+    }
+
+    const parsed = JSON.parse(text);
+    if (!parsed.days || !Array.isArray(parsed.days)) throw new Error('Invalid format — make sure Claude included a "days" array');
+    program = parsed;
+    saveProgram(program);
+    workoutData = {};
+    persistWorkoutData();
+    currentDayIndex = 0;
+    populateDaySelect();
+    buildWorkout();
+    closePasteModal();
+    showToast('Program loaded!');
+  } catch(e) {
+    alert('Could not find a valid program in what you pasted.\n\nMake sure you:\n1. Had the full conversation with Claude\n2. Said "generate my program" at the end\n3. Copied Claude\'s entire final response\n\nTry again or contact support.');
+  }
+}
+
+// ==================== COPY & SAVE ====================
+function formatLog() {
+  const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  let log = '';
+
+  if (currentSessionType === 'strength') {
+    const day = program.days[currentDayIndex];
+    log += `${day.name} | ${date}\n`;
+    const wu = [workoutData['warmup-min'] && `${workoutData['warmup-min']} min`, workoutData['warmup-inc'] && `${workoutData['warmup-inc']}%`, workoutData['warmup-spd'] && `${workoutData['warmup-spd']} mph`].filter(Boolean).join(' / ');
+    if (wu) log += `Warm-up: ${wu}${workoutData['warmup-note'] ? ' — ' + workoutData['warmup-note'] : ''}\n`;
+    log += '\n';
+    day.exercises.forEach(ex => {
+      const cleanName = ex.name.replace(/\W+/g, '');
+      const totalSets = ex.unilateral ? ex.sets * 2 : ex.sets;
+      const sets = [];
+      for (let i = 1; i <= totalSets; i++) {
+        const w = workoutData[`${cleanName}-w${i}`];
+        const r = workoutData[`${cleanName}-r${i}`];
+        if (w || r) {
+          const setNum = ex.unilateral ? Math.ceil(i / 2) : i;
+          const side = ex.unilateral ? (i % 2 === 1 ? 'L' : 'R') : '';
+          sets.push(`${setNum}${side}: ${w ? w + 'lbs×' : ''}${r || '?'}`);
+        }
+      }
+      if (sets.length) log += `${ex.name}: ${sets.join(', ')}\n`;
+    });
+    const cd = [workoutData['cooldown-min'] && `${workoutData['cooldown-min']} min`, workoutData['cooldown-inc'] && `${workoutData['cooldown-inc']}%`, workoutData['cooldown-spd'] && `${workoutData['cooldown-spd']} mph`].filter(Boolean).join(' / ');
+    if (cd) log += `\nCool-down: ${cd}${workoutData['cooldown-note'] ? ' — ' + workoutData['cooldown-note'] : ''}\n`;
+  } else if (currentSessionType === 'cardio') {
+    log += `Cardio | ${date}\n`;
+    const parts = [workoutData['cardio-type'], workoutData['cardio-min'] && `${workoutData['cardio-min']} min`, workoutData['cardio-hr'] && `${workoutData['cardio-hr']} bpm avg`, workoutData['cardio-inc'] && `${workoutData['cardio-inc']}% incline`, workoutData['cardio-spd'] && `${workoutData['cardio-spd']} mph`].filter(Boolean);
+    log += parts.join(' / ') + '\n';
+  } else if (currentSessionType === 'mobility') {
+    log += `Mobility | ${date}\n`;
+    MOBILITY_ROUTINE.forEach((item, i) => {
+      const done = workoutData[`mob-${i}`] === '1';
+      const time = workoutData[`mob-time-${i}`];
+      if (done) log += `✓ ${item.name}${time && time !== '0:00' ? ' — ' + time : ''}\n`;
+    });
+    const doneCount = MOBILITY_ROUTINE.filter((_, i) => workoutData[`mob-${i}`] === '1').length;
+    log += `(${doneCount}/${MOBILITY_ROUTINE.length} completed)\n`;
+  } else {
+    log += `Rest Day | ${date}\n`;
+  }
+
+  if (workoutData['normatec'] === '1') log += 'Normatec: done\n';
+  if (workoutData['workout-notes']) log += `Notes: ${workoutData['workout-notes']}\n`;
+  return log.trim();
+}
+
+function copyLog() {
+  const log = formatLog();
+  try {
+    navigator.clipboard.writeText(log).then(() => showToast('Copied — paste into chat')).catch(() => fallbackCopy(log));
+  } catch(e) { fallbackCopy(log); }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast('Copied — paste into chat');
+}
+
+function saveWorkout() {
+  const log = formatLog();
+  const history = getHistory();
+  history.unshift({ date: new Date().toLocaleDateString(), log });
+  if (history.length > 50) history.pop();
+  saveHistory(history);
+  workoutData = {};
+  persistWorkoutData();
+  buildWorkout();
+  showToast('Workout saved!');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.querySelector('div').textContent = msg;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 2500);
+}
+
+// ==================== START ====================
+init();
+</script>
+</body>
+</html>

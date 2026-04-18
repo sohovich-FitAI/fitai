@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitAI – Setup Guide</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-white min-h-screen pb-16">
+<div class="max-w-xl mx-auto p-5">
+
+  <!-- Header -->
+  <div class="text-center pt-8 mb-10">
+    <h1 class="text-4xl font-bold tracking-tighter mb-2">FitAI</h1>
+    <p class="text-gray-400 text-base">Your AI-powered personal trainer</p>
+    <p class="text-gray-500 text-sm mt-1">Beta Tester Setup Guide</p>
+  </div>
+
+  <!-- What is FitAI -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <h2 class="text-xl font-semibold mb-3">What is FitAI?</h2>
+    <p class="text-gray-300 text-sm leading-relaxed">FitAI is a workout tracker that uses AI to build you a personalized program based on your goals, schedule, equipment, and any injuries. Instead of a generic one-size-fits-all program, you get a program built specifically for you — and it refreshes every few weeks as you get stronger.</p>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-amber-500 text-black font-bold text-lg flex items-center justify-center flex-shrink-0">1</div>
+      <h2 class="text-xl font-semibold">Add FitAI to your home screen</h2>
+    </div>
+    <p class="text-gray-400 text-sm mb-4">FitAI works like an app but doesn't require an App Store download. Here's how to install it:</p>
+    <div class="space-y-3">
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-amber-400 text-sm font-semibold mb-1">iPhone</div>
+        <ol class="text-gray-300 text-sm space-y-1 list-decimal list-inside">
+          <li>Open <span class="text-white font-medium">Safari</span> (must be Safari, not Chrome)</li>
+          <li>Go to the FitAI link you were sent</li>
+          <li>Tap the <span class="text-white font-medium">Share button</span> at the bottom</li>
+          <li>Scroll down and tap <span class="text-white font-medium">Add to Home Screen</span></li>
+          <li>Tap <span class="text-white font-medium">Add</span> — FitAI will appear on your home screen</li>
+        </ol>
+      </div>
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-cyan-400 text-sm font-semibold mb-1">Android</div>
+        <ol class="text-gray-300 text-sm space-y-1 list-decimal list-inside">
+          <li>Open <span class="text-white font-medium">Chrome</span></li>
+          <li>Go to the FitAI link you were sent</li>
+          <li>Tap the <span class="text-white font-medium">three dots menu</span> in the top right</li>
+          <li>Tap <span class="text-white font-medium">Add to Home Screen</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-amber-500 text-black font-bold text-lg flex items-center justify-center flex-shrink-0">2</div>
+      <h2 class="text-xl font-semibold">Create your program with Claude</h2>
+    </div>
+    <p class="text-gray-400 text-sm mb-4">FitAI uses Claude AI to build your personalized program. You'll need a free Claude account.</p>
+    <div class="bg-gray-800 rounded-2xl p-4 mb-4">
+      <div class="text-sm font-semibold text-white mb-2">Get Claude free at:</div>
+      <a href="https://claude.ai" target="_blank" class="text-cyan-400 text-sm underline">claude.ai</a>
+    </div>
+    <p class="text-gray-400 text-sm mb-3">The prompt is built into the FitAI app — you don't need to write anything. Here's how it works:</p>
+
+    <div class="space-y-3 mb-4">
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-amber-400 text-sm font-semibold mb-1">This is a conversation, not a form</div>
+        <p class="text-gray-400 text-xs leading-relaxed">When you paste the prompt into Claude, it will ask you questions — about your health conditions, injuries, goals, schedule, and fitness history. Just answer honestly and in as much detail as you can. The more Claude understands about you, the better your program will be.</p>
+      </div>
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-white text-sm font-semibold mb-1">What Claude might ask about</div>
+        <ul class="text-gray-400 text-xs space-y-1">
+          <li>• Age, weight, height</li>
+          <li>• Health conditions — blood pressure, heart conditions, diabetes, gout, anything relevant</li>
+          <li>• Current or past injuries and limitations</li>
+          <li>• Medications that might affect exercise</li>
+          <li>• Your real fitness history — what has worked before, what hasn't</li>
+          <li>• Your actual goals beyond just "lose weight"</li>
+          <li>• Your schedule, gym access, and equipment</li>
+        </ul>
+      </div>
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-cyan-400 text-sm font-semibold mb-1">When you're done answering questions</div>
+        <p class="text-gray-400 text-xs leading-relaxed">Once Claude feels it knows enough about you, say <span class="text-white font-medium">"generate my program"</span> — Claude will output your personalized program. Copy Claude's entire response and paste it into FitAI.</p>
+      </div>
+    </div>
+
+    <div class="bg-gray-800 rounded-2xl p-4">
+      <div class="text-sm font-semibold text-white mb-2">Important tips:</div>
+      <ul class="text-gray-400 text-xs space-y-2">
+        <li>• <span class="text-white">Don't rush the conversation</span> — more detail = better program</li>
+        <li>• When copying Claude's response, <span class="text-white">copy the entire thing</span> — the app finds the program automatically, even if there's extra text</li>
+        <li>• If Claude asks about something you're not sure about, just be honest — it will work around your limitations</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-amber-500 text-black font-bold text-lg flex items-center justify-center flex-shrink-0">3</div>
+      <h2 class="text-xl font-semibold">Load your program into FitAI</h2>
+    </div>
+    <ol class="space-y-3">
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0 mt-0.5">01</div>
+        <div class="text-gray-300 text-sm">Open FitAI from your home screen</div>
+      </li>
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0 mt-0.5">02</div>
+        <div class="text-gray-300 text-sm">Tap <span class="text-amber-400 font-medium">📋 Get My Program</span> at the top</div>
+      </li>
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0 mt-0.5">03</div>
+        <div class="text-gray-300 text-sm">Tap <span class="text-white font-medium">Copy Prompt</span> — then switch to Claude and paste it. Answer Claude's questions in detail.</div>
+      </li>
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0 mt-0.5">04</div>
+        <div class="text-gray-300 text-sm">When Claude is done asking questions, say <span class="text-white font-medium">"generate my program"</span></div>
+      </li>
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0 mt-0.5">05</div>
+        <div class="text-gray-300 text-sm">Copy Claude's entire response, come back to FitAI, paste it in, and tap <span class="text-white font-medium">Load Program</span></div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-amber-500 text-black font-bold text-lg flex items-center justify-center flex-shrink-0">4</div>
+      <h2 class="text-xl font-semibold">Using the app at the gym</h2>
+    </div>
+    <div class="space-y-3">
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-white text-sm font-medium mb-1">Logging a workout</div>
+        <p class="text-gray-400 text-xs leading-relaxed">Select your session type (Strength, Cardio, or Mobility) and the correct day. Log your weight and reps for each set as you go. Tap the exercise name to watch a form tutorial video. Hit DONE after each set — the rest timer starts automatically.</p>
+      </div>
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-white text-sm font-medium mb-1">Rest timer</div>
+        <p class="text-gray-400 text-xs leading-relaxed">The timer opens automatically when you complete a set. Default is 90 seconds. You can change it to 60s, 2min, or 3min. Tap Timer in the top right anytime to open it manually.</p>
+      </div>
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-white text-sm font-medium mb-1">Mobility sessions</div>
+        <p class="text-gray-400 text-xs leading-relaxed">Switch to Mobility session type. Each stretch has its own Start/Done timer so you can track how long you held each position. The checkbox marks it complete automatically when you tap Done.</p>
+      </div>
+      <div class="bg-gray-800 rounded-2xl p-4">
+        <div class="text-white text-sm font-medium mb-1">Saving & sharing</div>
+        <p class="text-gray-400 text-xs leading-relaxed">Tap <span class="text-white font-medium">Save</span> after each workout to save it to your history. Tap <span class="text-white font-medium">Copy & Share</span> to copy your workout log as formatted text — you can paste it into Claude to get feedback or update your program.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 — Refreshing program -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-9 h-9 rounded-full bg-amber-500 text-black font-bold text-lg flex items-center justify-center flex-shrink-0">5</div>
+      <h2 class="text-xl font-semibold">Refreshing your program</h2>
+    </div>
+    <p class="text-gray-400 text-sm leading-relaxed mb-3">Every 4-6 weeks your program should be refreshed to keep your body adapting. Here's how:</p>
+    <ol class="space-y-2">
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0">01</div>
+        <div class="text-gray-300 text-sm">Use <span class="text-white font-medium">Copy & Share</span> after a few workouts to copy your recent results</div>
+      </li>
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0">02</div>
+        <div class="text-gray-300 text-sm">Open Claude and paste your results along with this message: <span class="text-gray-400 italic">"Here are my recent workout results. Please create a refreshed program for the next 4 weeks and output it as JSON in the same format as before."</span></div>
+      </li>
+      <li class="flex gap-3 items-start">
+        <div class="text-amber-500 font-bold text-sm flex-shrink-0">03</div>
+        <div class="text-gray-300 text-sm">Paste Claude's new JSON into FitAI using the Paste New Program button</div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Feedback -->
+  <div class="bg-gray-900 rounded-3xl p-6 mb-5">
+    <h2 class="text-xl font-semibold mb-3">Beta Tester Feedback</h2>
+    <p class="text-gray-400 text-sm leading-relaxed mb-3">You're one of the first people using FitAI. Your feedback directly shapes the product. Please note anything that:</p>
+    <ul class="text-gray-300 text-sm space-y-2">
+      <li>• Confuses you or is hard to figure out</li>
+      <li>• Doesn't work as expected</li>
+      <li>• Is missing that you wish was there</li>
+      <li>• Works really well and you want to keep</li>
+    </ul>
+    <p class="text-gray-400 text-sm mt-4">Send feedback directly to the FitAI team. Every comment helps.</p>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center text-gray-600 text-xs pb-4">
+    FitAI Beta — Thank you for testing
+  </div>
+
+</div>
+
+<script>
+// Setup guide — no interactive functions needed
+</script>
+</body>
+</html>
