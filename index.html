@@ -9,11 +9,19 @@
 <title>FitAI</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body { -webkit-tap-highlight-color: transparent; }
-  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .slide-up { animation: slideUp 0.2s ease-out; }
-  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-bg { background: rgba(0,0,0,0.85); }
+body { -webkit-tap-highlight-color: transparent; }
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.slide-up { animation: slideUp 0.2s ease-out; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-bg { background: rgba(0,0,0,0.85); }
+/* FIX: iOS tap reliability — all tappable dynamic elements */
+button, a, [onclick] {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
 </style>
 </head>
 <body class="bg-gray-950 text-white min-h-screen pb-36 select-none">
@@ -31,11 +39,11 @@
       <button onclick="closeVideoModal()" class="text-gray-400 text-3xl leading-none">&times;</button>
     </div>
     <a id="videoLink" href="#" target="_blank" rel="noopener"
-       class="block w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-5 rounded-2xl text-center text-base mb-3">
+      class="block w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-5 rounded-2xl text-center text-base mb-3">
       ▶ Watch Tutorial Video
     </a>
     <a id="searchLink" href="#" target="_blank" rel="noopener"
-       class="block w-full bg-gray-700 text-white font-semibold py-5 rounded-2xl text-center text-base">
+      class="block w-full bg-gray-700 text-white font-semibold py-5 rounded-2xl text-center text-base">
       🔍 Search YouTube
     </a>
   </div>
@@ -81,35 +89,32 @@
       <button onclick="closePasteModal()" class="text-gray-400 text-3xl leading-none">&times;</button>
     </div>
 
-    <!-- Big prominent copy button FIRST -->
     <button onclick="copyPrompt()" id="copyPromptBtn"
-            class="w-full bg-amber-500 text-black font-bold py-5 rounded-2xl text-base mb-4 flex items-center justify-center gap-2">
+      class="w-full bg-amber-500 text-black font-bold py-5 rounded-2xl text-base mb-4 flex items-center justify-center gap-2">
       <span>Step 1 — Copy the AI Prompt</span>
     </button>
 
-    <!-- AI picker -->
     <div class="mb-5">
       <div class="text-xs text-gray-400 uppercase tracking-wide mb-3">Step 2 — Open your AI and paste it</div>
       <div class="grid grid-cols-3 gap-3">
         <a href="https://claude.ai" target="_blank"
-           class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
+          class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
           <div class="text-white text-sm font-semibold">Claude</div>
           <div class="text-gray-500 text-xs mt-1">claude.ai</div>
         </a>
         <a href="https://chatgpt.com" target="_blank"
-           class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
+          class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
           <div class="text-white text-sm font-semibold">ChatGPT</div>
           <div class="text-gray-500 text-xs mt-1">chatgpt.com</div>
         </a>
         <a href="https://grok.com" target="_blank"
-           class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
+          class="bg-gray-800 rounded-2xl p-3 text-center border border-gray-700">
           <div class="text-white text-sm font-semibold">Grok</div>
           <div class="text-gray-500 text-xs mt-1">grok.com</div>
         </a>
       </div>
     </div>
 
-    <!-- Then steps -->
     <div class="space-y-3 mb-5">
       <div class="flex gap-3 items-start">
         <div class="w-7 h-7 rounded-full bg-gray-700 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
@@ -141,7 +146,6 @@
       </div>
     </div>
 
-    <!-- Hidden prompt text -->
     <div id="claudePrompt" class="hidden">I want you to act as my personal trainer and build me a completely personalized workout program. This is not a generic program — I need you to truly understand me before you build anything.
 
 Before creating my program, ask me everything you need to know. Make sure you ask about:
@@ -182,7 +186,6 @@ JSON format:
 
 <!-- Main App -->
 <div class="max-w-xl mx-auto p-4">
-
   <!-- Header -->
   <div class="flex justify-between items-center mb-6 pt-2">
     <div>
@@ -197,7 +200,7 @@ JSON format:
 
   <!-- Paste Program Button -->
   <button onclick="openPasteModal()"
-          class="w-full mb-5 bg-amber-500 hover:bg-amber-600 text-black font-semibold py-4 rounded-3xl text-base">
+    class="w-full mb-5 bg-amber-500 hover:bg-amber-600 text-black font-semibold py-4 rounded-3xl text-base">
     📋 Paste New Program
   </button>
 
@@ -219,9 +222,7 @@ JSON format:
   </div>
 
   <h2 id="workoutTitle" class="text-2xl font-semibold mb-6"></h2>
-
   <div id="workoutContent" class="space-y-6"></div>
-
 </div>
 
 <!-- Bottom Bar -->
@@ -261,7 +262,7 @@ const VIDEO_LINKS = {
 // ==================== DEFAULT PROGRAM ====================
 const DEFAULT_PROGRAM = {
   days: [
-    { id: "mon", name: "Day 1 – Lower Focus", exercises: [
+    { id: "mon", name: "Day 1 – Lower Focus", type: "strength", exercises: [
       { name: "Hack Squat Machine", sets: 4, target: "6-8 reps", unilateral: false, prev: "New exercise", note: "Start conservative, form first. Feet shoulder width, controlled descent." },
       { name: "Single Leg Curl", sets: 4, target: "10-12 reps/side", unilateral: true, prev: "120 lbs × 10-12", note: "Weaker left leg first each set. Start 60-70 lbs." },
       { name: "Hip Abductor Machine", sets: 3, target: "15-20 reps", unilateral: false, prev: "New exercise", note: "Start 50-70 lbs. Slow, squeeze glutes at top. Therapeutic for IT band." },
@@ -269,7 +270,7 @@ const DEFAULT_PROGRAM = {
       { name: "Hanging Knee Raises", sets: 2, target: "10-12 reps", unilateral: false, prev: "New exercise", note: "Captain's chair. Slow and controlled, no swinging." },
       { name: "Cable Pallof Press", sets: 2, target: "10-12 reps/side", unilateral: true, prev: "New exercise", note: "Start 20-30 lbs. Brace core hard against the cable pull." }
     ]},
-    { id: "wed", name: "Day 2 – Upper Focus", exercises: [
+    { id: "wed", name: "Day 2 – Upper Focus", type: "strength", exercises: [
       { name: "Wide Grip Cable Lat Pulldown", sets: 4, target: "6-8 reps", unilateral: false, prev: "Assisted pull-ups 125-130 assist", note: "Start 130-140 lbs. Drive elbows down and back, not biceps." },
       { name: "Chest Supported Dumbbell Row", sets: 4, target: "10-12 reps/side", unilateral: true, prev: "Single arm cable row 55 lbs", note: "Incline bench 45°, chest down. Start 50-55 lbs. Takes lower back out." },
       { name: "Landmine Press", sets: 3, target: "8-10 reps/side", unilateral: true, prev: "Overhead press 80-90 lbs", note: "Start very light, 25-35 lbs on bar. Single arm, press up and forward." },
@@ -277,7 +278,7 @@ const DEFAULT_PROGRAM = {
       { name: "Rope Pushdown", sets: 2, target: "12-15 reps", unilateral: false, prev: "70-80 lbs", note: "Start 70-75 lbs." },
       { name: "Preacher Curl Machine", sets: 2, target: "10-12 reps", unilateral: false, prev: "Cable curl 60-70 lbs", note: "Start 40-50 lbs. Full stretch at bottom, squeeze at top. Elbow on pad throughout." }
     ]},
-    { id: "fri", name: "Day 3 – Full Body Hybrid", exercises: [
+    { id: "fri", name: "Day 3 – Full Body Hybrid", type: "strength", exercises: [
       { name: "Dumbbell Romanian Deadlift", sets: 4, target: "6-8 reps", unilateral: false, prev: "140 lbs total (70/hand) × 8", note: "Start 140 lbs total. Hinge at hips, slow 3-4 sec eccentric." },
       { name: "Bulgarian Split Squat", sets: 4, target: "8-10 reps/side", unilateral: true, prev: "40 lbs goblet hold × 10/side", note: "Legs fresher on Friday. Start 25-30 lbs." },
       { name: "Incline Dumbbell Press", sets: 3, target: "8-10 reps", unilateral: false, prev: "Flat DB press 50/hand × 10-12", note: "Bench 30-45°. Start 45-50 lbs per hand." },
@@ -305,7 +306,6 @@ const MOBILITY_ROUTINE = [
 let program = loadProgram();
 let currentDayIndex = 0;
 let currentSessionType = "strength";
-let mobilityTimers = {};
 let timerInterval = null;
 let timerSeconds = 90;
 let timerOriginal = 90;
@@ -386,8 +386,16 @@ function changeDay() {
 function changeSession() {
   currentSessionType = document.getElementById('sessionType').value;
   const wrapper = document.getElementById('daySelectWrapper');
-  // Hide day dropdown for cardio, mobility and rest — only relevant for strength
   wrapper.style.display = currentSessionType === 'strength' ? 'block' : 'none';
+
+  // FIX: When switching to Mobility, auto-select the program's mobility day if one exists
+  if (currentSessionType === 'mobility') {
+    const mobilityIndex = program.days.findIndex(d => d.type === 'mobility');
+    if (mobilityIndex !== -1) {
+      currentDayIndex = mobilityIndex;
+    }
+  }
+
   buildWorkout();
 }
 
@@ -414,7 +422,6 @@ function buildWorkout() {
     content.appendChild(buildNotes());
   } else if (effectiveType === 'mobility') {
     titleEl.textContent = 'Mobility & Stretch';
-    // Find the mobility day from the program if it exists, never use a strength day
     const mobilityDay = program.days.find(d => d.type === 'mobility');
     content.appendChild(buildMobility(mobilityDay || null));
     content.appendChild(buildNormatec());
@@ -433,7 +440,7 @@ function buildExerciseCard(ex) {
   const cleanName = ex.name.replace(/\W+/g, '');
 
   let html = `
-    <button onclick="openVideoModal('${ex.name}')" class="w-full text-left mb-1">
+    <button onclick="openVideoModal('${ex.name.replace(/'/g, "\\'")}')" class="w-full text-left mb-1" style="touch-action:manipulation">
       <span class="text-cyan-400 font-semibold text-xl underline decoration-dotted decoration-cyan-700">${ex.name}</span>
     </button>
     <div class="text-gray-400 text-sm mb-2">${ex.sets} sets × ${ex.target}</div>`;
@@ -451,6 +458,7 @@ function buildExerciseCard(ex) {
 
   const setsContainer = card.querySelector(`#sets-${cleanName}`);
   const totalSets = ex.unilateral ? ex.sets * 2 : ex.sets;
+
   for (let i = 1; i <= totalSets; i++) {
     const setNum = ex.unilateral ? Math.ceil(i / 2) : i;
     const side = ex.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
@@ -465,28 +473,29 @@ function buildExerciseCard(ex) {
       <div class="text-xs text-gray-400 mb-3">Set ${setNum}${side}</div>
       <div class="grid grid-cols-2 gap-3 mb-3">
         <input type="number" inputmode="decimal" id="${wKey}" value="${savedW}" placeholder="Weight (lbs)"
-               class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
-               oninput="saveInput('${wKey}', this.value)">
+          class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+          oninput="saveInput('${wKey}', this.value)">
         <input type="number" inputmode="decimal" id="${rKey}" value="${savedR}" placeholder="Reps"
-               class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
-               oninput="saveInput('${rKey}', this.value)">
+          class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+          oninput="saveInput('${rKey}', this.value)">
       </div>
       <div class="flex gap-3">
-        <button onclick="markDone(this, '${ex.name}', '${setNum}${side}')"
-                class="flex-1 bg-emerald-500 text-black font-semibold py-4 rounded-2xl text-sm">DONE</button>
+        <button onclick="markDone(this, '${ex.name.replace(/'/g, "\\'")}', '${setNum}${side}')"
+          class="flex-1 bg-emerald-500 text-black font-semibold py-4 rounded-2xl text-sm" style="touch-action:manipulation">DONE</button>
         <button onclick="repeatLast('${cleanName}', ${i})"
-                class="bg-gray-700 px-6 py-4 rounded-2xl text-xl">↺</button>
+          class="bg-gray-700 px-6 py-4 rounded-2xl text-xl" style="touch-action:manipulation">↺</button>
         <button onclick="openTimer()"
-                class="bg-gray-700 px-4 py-4 rounded-2xl text-sm">⏱</button>
+          class="bg-gray-700 px-4 py-4 rounded-2xl text-sm" style="touch-action:manipulation">⏱</button>
       </div>`;
     setsContainer.appendChild(setDiv);
   }
+
   return card;
 }
 
 function buildWarmCool(type) {
   const label = type === 'warmup' ? 'Warm-up' : 'Cool-down';
-  const defaultText = type === 'warmup' ? program.days[currentDayIndex].warmup || '5 min incline walk' : '5 min walk + stretches';
+  const defaultText = type === 'warmup' ? (program.days[currentDayIndex] && program.days[currentDayIndex].warmup) || '5 min incline walk' : '5 min walk + stretches';
   const minKey = `${type}-min`;
   const incKey = `${type}-inc`;
   const spdKey = `${type}-spd`;
@@ -499,21 +508,21 @@ function buildWarmCool(type) {
     <div class="text-gray-500 text-xs mb-4">${defaultText}</div>
     <div class="grid grid-cols-3 gap-3 mb-3">
       <div><div class="text-xs text-gray-400 mb-1">Minutes</div>
-        <input type="number" inputmode="decimal" id="${minKey}" value="${workoutData[minKey]||''}" placeholder="min"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('${minKey}', this.value)"></div>
+      <input type="number" inputmode="decimal" id="${minKey}" value="${workoutData[minKey]||''}" placeholder="min"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('${minKey}', this.value)"></div>
       <div><div class="text-xs text-gray-400 mb-1">Incline %</div>
-        <input type="number" inputmode="decimal" id="${incKey}" value="${workoutData[incKey]||''}" placeholder="%"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('${incKey}', this.value)"></div>
+      <input type="number" inputmode="decimal" id="${incKey}" value="${workoutData[incKey]||''}" placeholder="%"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('${incKey}', this.value)"></div>
       <div><div class="text-xs text-gray-400 mb-1">Speed mph</div>
-        <input type="number" inputmode="decimal" id="${spdKey}" value="${workoutData[spdKey]||''}" placeholder="mph"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('${spdKey}', this.value)"></div>
+      <input type="number" inputmode="decimal" id="${spdKey}" value="${workoutData[spdKey]||''}" placeholder="mph"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('${spdKey}', this.value)"></div>
     </div>
     <input type="text" id="${notKey}" value="${workoutData[notKey]||''}" placeholder="Notes (bike, elliptical...)"
-           class="w-full bg-gray-800 rounded-xl px-4 py-3 text-sm text-white"
-           oninput="saveInput('${notKey}', this.value)">`;
+      class="w-full bg-gray-800 rounded-xl px-4 py-3 text-sm text-white"
+      oninput="saveInput('${notKey}', this.value)">`;
   return div;
 }
 
@@ -525,27 +534,27 @@ function buildCardio() {
     <div class="text-gray-500 text-xs mb-4">Elliptical, bike, or incline walk — target 110-130 bpm</div>
     <div class="grid grid-cols-2 gap-3 mb-3">
       <div><div class="text-xs text-gray-400 mb-1">Minutes</div>
-        <input type="number" inputmode="decimal" id="cardio-min" value="${workoutData['cardio-min']||''}" placeholder="min"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('cardio-min', this.value)"></div>
+      <input type="number" inputmode="decimal" id="cardio-min" value="${workoutData['cardio-min']||''}" placeholder="min"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('cardio-min', this.value)"></div>
       <div><div class="text-xs text-gray-400 mb-1">Avg HR (bpm)</div>
-        <input type="number" inputmode="decimal" id="cardio-hr" value="${workoutData['cardio-hr']||''}" placeholder="bpm"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('cardio-hr', this.value)"></div>
+      <input type="number" inputmode="decimal" id="cardio-hr" value="${workoutData['cardio-hr']||''}" placeholder="bpm"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('cardio-hr', this.value)"></div>
     </div>
     <div class="grid grid-cols-3 gap-3 mb-3">
       <div><div class="text-xs text-gray-400 mb-1">Incline %</div>
-        <input type="number" inputmode="decimal" id="cardio-inc" value="${workoutData['cardio-inc']||''}" placeholder="%"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('cardio-inc', this.value)"></div>
+      <input type="number" inputmode="decimal" id="cardio-inc" value="${workoutData['cardio-inc']||''}" placeholder="%"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('cardio-inc', this.value)"></div>
       <div><div class="text-xs text-gray-400 mb-1">Speed mph</div>
-        <input type="number" inputmode="decimal" id="cardio-spd" value="${workoutData['cardio-spd']||''}" placeholder="mph"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
-               oninput="saveInput('cardio-spd', this.value)"></div>
+      <input type="number" inputmode="decimal" id="cardio-spd" value="${workoutData['cardio-spd']||''}" placeholder="mph"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-base text-white"
+        oninput="saveInput('cardio-spd', this.value)"></div>
       <div><div class="text-xs text-gray-400 mb-1">Machine</div>
-        <input type="text" id="cardio-type" value="${workoutData['cardio-type']||''}" placeholder="type"
-               class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-sm text-white"
-               oninput="saveInput('cardio-type', this.value)"></div>
+      <input type="text" id="cardio-type" value="${workoutData['cardio-type']||''}" placeholder="type"
+        class="w-full bg-gray-800 rounded-xl px-3 py-3 text-center text-sm text-white"
+        oninput="saveInput('cardio-type', this.value)"></div>
     </div>`;
   return div;
 }
@@ -575,7 +584,8 @@ function buildMobility(programDay) {
       <div id="mob-item-${i}" class="bg-gray-800 rounded-2xl p-4 ${checked ? 'opacity-60' : ''}">
         <div class="flex items-center gap-3 mb-3">
           <div onclick="toggleMobility(${i})" id="mob-check-${i}"
-               class="w-7 h-7 rounded-full border-2 ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center flex-shrink-0 cursor-pointer">
+            class="w-7 h-7 rounded-full border-2 ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center flex-shrink-0"
+            style="cursor:pointer;touch-action:manipulation">
             ${checked ? '<span class="text-black text-sm font-bold">✓</span>' : ''}
           </div>
           <div class="flex-1">
@@ -586,11 +596,11 @@ function buildMobility(programDay) {
         </div>
         <div class="flex items-center gap-3">
           <button id="mob-start-${i}" onclick="startMobTimer(${i})"
-                  class="flex-1 bg-cyan-600 text-white font-semibold py-3 rounded-xl text-sm">
+            class="flex-1 bg-cyan-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
             Start
           </button>
           <button id="mob-stop-${i}" onclick="stopMobTimer(${i})"
-                  class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm hidden">
+            class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm hidden" style="touch-action:manipulation">
             Done
           </button>
           <div id="mob-display-${i}" class="text-cyan-400 font-mono text-lg font-bold min-w-12 text-center">
@@ -599,6 +609,7 @@ function buildMobility(programDay) {
         </div>
       </div>`;
   });
+
   html += '</div>';
   div.innerHTML = html;
   return div;
@@ -610,7 +621,7 @@ function buildNormatec() {
   div.className = 'bg-gray-900 rounded-3xl p-5';
   div.innerHTML = `
     <div onclick="toggleNormatec()" id="normatec-row"
-         class="flex items-center justify-between cursor-pointer">
+      class="flex items-center justify-between" style="cursor:pointer;touch-action:manipulation">
       <div>
         <div class="text-white font-medium">Normatec Session</div>
         <div class="text-gray-500 text-xs">Recovery compression</div>
@@ -628,8 +639,8 @@ function buildNotes() {
   div.innerHTML = `
     <div class="text-white font-medium mb-3">Workout Notes</div>
     <textarea id="workout-notes" rows="3" placeholder="How did it feel? Any pain? Adjustments needed?"
-              class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white resize-none"
-              oninput="saveInput('workout-notes', this.value)">${workoutData['workout-notes']||''}</textarea>`;
+      class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white resize-none"
+      oninput="saveInput('workout-notes', this.value)">${workoutData['workout-notes']||''}</textarea>`;
   return div;
 }
 
@@ -662,7 +673,8 @@ function toggleMobility(i) {
   const check = document.getElementById(`mob-check-${i}`);
   if (item) item.classList.toggle('opacity-60', !isChecked);
   if (check) {
-    check.className = `w-7 h-7 rounded-full border-2 ${!isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center flex-shrink-0 cursor-pointer`;
+    check.className = `w-7 h-7 rounded-full border-2 ${!isChecked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'} flex items-center justify-center flex-shrink-0`;
+    check.style.cssText = 'cursor:pointer;touch-action:manipulation';
     check.innerHTML = !isChecked ? '<span class="text-black text-sm font-bold">✓</span>' : '';
   }
 }
@@ -697,7 +709,8 @@ function stopMobTimer(i) {
   const check = document.getElementById(`mob-check-${i}`);
   if (item) item.classList.add('opacity-60');
   if (check) {
-    check.className = 'w-7 h-7 rounded-full border-2 bg-emerald-500 border-emerald-500 flex items-center justify-center flex-shrink-0 cursor-pointer';
+    check.className = 'w-7 h-7 rounded-full border-2 bg-emerald-500 border-emerald-500 flex items-center justify-center flex-shrink-0';
+    check.style.cssText = 'cursor:pointer;touch-action:manipulation';
     check.innerHTML = '<span class="text-black text-sm font-bold">✓</span>';
   }
 }
@@ -845,8 +858,7 @@ function loadPastedProgram() {
   try {
     let text = document.getElementById('programPasteArea').value.trim();
 
-    // Try to extract JSON from anywhere in the response
-    // Handle ```json code blocks
+    // Try to extract JSON from code blocks first
     const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeBlock) text = codeBlock[1].trim();
 
@@ -858,7 +870,8 @@ function loadPastedProgram() {
     }
 
     const parsed = JSON.parse(text);
-    if (!parsed.days || !Array.isArray(parsed.days)) throw new Error('Invalid format — make sure Claude included a "days" array');
+    if (!parsed.days || !Array.isArray(parsed.days)) throw new Error('Invalid format — make sure your AI included a "days" array');
+
     program = parsed;
     saveProgram(program);
     workoutData = {};
@@ -869,11 +882,20 @@ function loadPastedProgram() {
     closePasteModal();
     showToast('Program loaded!');
   } catch(e) {
-    alert('Could not find a valid program in what you pasted.\n\nMake sure you:\n1. Had the full conversation with Claude\n2. Said "generate my program" at the end\n3. Copied Claude\'s entire final response\n\nTry again or contact support.');
+    alert('Could not find a valid program in what you pasted.\n\nMake sure you:\n1. Had the full conversation with your AI\n2. Said "generate my program" at the end\n3. Copied the entire final response\n\nTry again or contact support.');
   }
 }
 
 // ==================== COPY & SAVE ====================
+function getActiveMobilityRoutine() {
+  // FIX: always use the program's mobility day exercises if available, not the hardcoded fallback
+  const mobilityDay = program.days.find(d => d.type === 'mobility');
+  if (mobilityDay && mobilityDay.exercises && mobilityDay.exercises.length) {
+    return mobilityDay.exercises.map(ex => ({ name: ex.name, detail: ex.detail || ex.target || '' }));
+  }
+  return MOBILITY_ROUTINE;
+}
+
 function formatLog() {
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   let log = '';
@@ -884,6 +906,7 @@ function formatLog() {
     const wu = [workoutData['warmup-min'] && `${workoutData['warmup-min']} min`, workoutData['warmup-inc'] && `${workoutData['warmup-inc']}%`, workoutData['warmup-spd'] && `${workoutData['warmup-spd']} mph`].filter(Boolean).join(' / ');
     if (wu) log += `Warm-up: ${wu}${workoutData['warmup-note'] ? ' — ' + workoutData['warmup-note'] : ''}\n`;
     log += '\n';
+
     day.exercises.forEach(ex => {
       const cleanName = ex.name.replace(/\W+/g, '');
       const totalSets = ex.unilateral ? ex.sets * 2 : ex.sets;
@@ -899,21 +922,27 @@ function formatLog() {
       }
       if (sets.length) log += `${ex.name}: ${sets.join(', ')}\n`;
     });
+
     const cd = [workoutData['cooldown-min'] && `${workoutData['cooldown-min']} min`, workoutData['cooldown-inc'] && `${workoutData['cooldown-inc']}%`, workoutData['cooldown-spd'] && `${workoutData['cooldown-spd']} mph`].filter(Boolean).join(' / ');
     if (cd) log += `\nCool-down: ${cd}${workoutData['cooldown-note'] ? ' — ' + workoutData['cooldown-note'] : ''}\n`;
+
   } else if (currentSessionType === 'cardio') {
     log += `Cardio | ${date}\n`;
     const parts = [workoutData['cardio-type'], workoutData['cardio-min'] && `${workoutData['cardio-min']} min`, workoutData['cardio-hr'] && `${workoutData['cardio-hr']} bpm avg`, workoutData['cardio-inc'] && `${workoutData['cardio-inc']}% incline`, workoutData['cardio-spd'] && `${workoutData['cardio-spd']} mph`].filter(Boolean);
     log += parts.join(' / ') + '\n';
+
   } else if (currentSessionType === 'mobility') {
     log += `Mobility | ${date}\n`;
-    MOBILITY_ROUTINE.forEach((item, i) => {
+    // FIX: use the active routine (program's mobility day or fallback), not hardcoded MOBILITY_ROUTINE
+    const activeRoutine = getActiveMobilityRoutine();
+    activeRoutine.forEach((item, i) => {
       const done = workoutData[`mob-${i}`] === '1';
       const time = workoutData[`mob-time-${i}`];
       if (done) log += `✓ ${item.name}${time && time !== '0:00' ? ' — ' + time : ''}\n`;
     });
-    const doneCount = MOBILITY_ROUTINE.filter((_, i) => workoutData[`mob-${i}`] === '1').length;
-    log += `(${doneCount}/${MOBILITY_ROUTINE.length} completed)\n`;
+    const doneCount = activeRoutine.filter((_, i) => workoutData[`mob-${i}`] === '1').length;
+    log += `(${doneCount}/${activeRoutine.length} completed)\n`;
+
   } else {
     log += `Rest Day | ${date}\n`;
   }
