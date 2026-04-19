@@ -178,8 +178,30 @@ JSON format:
 {"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise Name","sets":4,"target":"8-10 reps","unilateral":false,"prev":"120 lbs × 10","rec":"125 lbs × 10","note":"Form tip here"}]},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
 
     <div class="text-gray-500 text-xs mb-2 text-center">↓ Paste your AI's full response here ↓</div>
-    <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-4" placeholder="Paste your AI's full response here..."></textarea>
-    <button onclick="loadPastedProgram()" class="w-full bg-emerald-500 text-black font-semibold py-4 rounded-2xl mb-3">Load Program</button>
+    <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-2" placeholder="Paste your AI's full response here..."></textarea>
+
+    <!-- Error message (inline, no alert) -->
+    <div id="pasteErrorMsg" class="hidden text-red-400 text-xs bg-red-950 rounded-xl px-4 py-3 mb-3 leading-relaxed"></div>
+
+    <!-- Preview card — shown after successful parse -->
+    <div id="programPreview" class="hidden bg-gray-800 rounded-2xl p-4 mb-4 border border-emerald-600">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-emerald-400 text-base">✓</span>
+        <span class="text-white text-sm font-semibold">Program found</span>
+        <span id="programPreviewMeta" class="text-gray-400 text-xs ml-auto"></span>
+      </div>
+      <pre id="programPreviewBody" class="text-gray-300 text-xs whitespace-pre-wrap font-sans leading-relaxed mb-4"></pre>
+      <div class="flex gap-3">
+        <button onclick="confirmLoadProgram()" class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
+          Load This Program
+        </button>
+        <button onclick="cancelProgramPreview()" class="bg-gray-700 text-white px-5 py-3 rounded-xl text-sm" style="touch-action:manipulation">
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <button onclick="loadPastedProgram()" id="parseProgramBtn" class="w-full bg-emerald-500 text-black font-semibold py-4 rounded-2xl mb-3">Load Program</button>
     <button onclick="closePasteModal()" class="w-full bg-gray-700 text-white py-4 rounded-2xl">Cancel</button>
   </div>
 </div>
@@ -824,6 +846,14 @@ function openPasteModal() {
 
 function closePasteModal() {
   document.getElementById('pasteModal').classList.add('hidden');
+  // Reset paste modal state
+  _pendingProgram = null;
+  const preview = document.getElementById('programPreview');
+  if (preview) preview.classList.add('hidden');
+  const errMsg = document.getElementById('pasteErrorMsg');
+  if (errMsg) errMsg.classList.add('hidden');
+  const area = document.getElementById('programPasteArea');
+  if (area) { area.value = ''; area.classList.remove('border', 'border-red-500'); }
 }
 
 function copyPrompt() {
@@ -854,6 +884,8 @@ function fallbackCopyPrompt(text, callback) {
   if (callback) callback();
 }
 
+let _pendingProgram = null;
+
 function loadPastedProgram() {
   try {
     let text = document.getElementById('programPasteArea').value.trim();
@@ -870,20 +902,69 @@ function loadPastedProgram() {
     }
 
     const parsed = JSON.parse(text);
-    if (!parsed.days || !Array.isArray(parsed.days)) throw new Error('Invalid format — make sure your AI included a "days" array');
+    if (!parsed.days || !Array.isArray(parsed.days)) throw new Error('No days array found');
 
-    program = parsed;
-    saveProgram(program);
-    workoutData = {};
-    persistWorkoutData();
-    currentDayIndex = 0;
-    populateDaySelect();
-    buildWorkout();
-    closePasteModal();
-    showToast('Program loaded!');
+    // Build preview summary
+    const strengthDays = parsed.days.filter(d => !d.type || d.type === 'strength');
+    const mobilityDays = parsed.days.filter(d => d.type === 'mobility');
+    const totalExercises = strengthDays.reduce((sum, d) => sum + (d.exercises ? d.exercises.length : 0), 0);
+
+    let summaryLines = parsed.days.map(d => {
+      if (d.type === 'mobility') return `• ${d.name} — mobility day`;
+      const count = d.exercises ? d.exercises.length : 0;
+      return `• ${d.name} — ${count} exercise${count !== 1 ? 's' : ''}`;
+    }).join('\n');
+
+    // Store pending and show preview
+    _pendingProgram = parsed;
+    showProgramPreview(summaryLines, parsed.days.length, totalExercises);
+
   } catch(e) {
-    alert('Could not find a valid program in what you pasted.\n\nMake sure you:\n1. Had the full conversation with your AI\n2. Said "generate my program" at the end\n3. Copied the entire final response\n\nTry again or contact support.');
+    // Show specific error in the modal instead of a jarring alert
+    const area = document.getElementById('programPasteArea');
+    area.classList.add('border', 'border-red-500');
+    const errDiv = document.getElementById('pasteErrorMsg');
+    if (errDiv) {
+      errDiv.textContent = 'Could not find a valid program. Make sure you copied the entire AI response and said "generate my program" first.';
+      errDiv.classList.remove('hidden');
+    }
+    setTimeout(() => {
+      area.classList.remove('border', 'border-red-500');
+      if (errDiv) errDiv.classList.add('hidden');
+    }, 4000);
   }
+}
+
+function showProgramPreview(summaryLines, dayCount, exerciseCount) {
+  const previewDiv = document.getElementById('programPreview');
+  const previewBody = document.getElementById('programPreviewBody');
+  const previewMeta = document.getElementById('programPreviewMeta');
+
+  previewMeta.textContent = `${dayCount} day${dayCount !== 1 ? 's' : ''} · ${exerciseCount} strength exercise${exerciseCount !== 1 ? 's' : ''}`;
+  previewBody.textContent = summaryLines;
+  previewDiv.classList.remove('hidden');
+
+  // Scroll preview into view
+  previewDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function confirmLoadProgram() {
+  if (!_pendingProgram) return;
+  program = _pendingProgram;
+  _pendingProgram = null;
+  saveProgram(program);
+  workoutData = {};
+  persistWorkoutData();
+  currentDayIndex = 0;
+  populateDaySelect();
+  buildWorkout();
+  closePasteModal();
+  showToast('Program loaded!');
+}
+
+function cancelProgramPreview() {
+  _pendingProgram = null;
+  document.getElementById('programPreview').classList.add('hidden');
 }
 
 // ==================== COPY & SAVE ====================
@@ -977,10 +1058,9 @@ function saveWorkout() {
   history.unshift({ date: new Date().toLocaleDateString(), log });
   if (history.length > 50) history.pop();
   saveHistory(history);
-  workoutData = {};
-  persistWorkoutData();
-  buildWorkout();
-  showToast('Workout saved!');
+  // Don't clear workoutData — keep inputs visible after saving
+  // User can manually switch days/sessions to start fresh
+  showToast('Workout saved! ✓');
 }
 
 function showToast(msg) {
