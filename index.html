@@ -419,6 +419,7 @@ let timerSeconds = 90;
 let timerOriginal = 90;
 let timerRunning = false;
 let workoutData = {};
+let _pendingProgram = null;
 
 // ==================== STORAGE ====================
 function loadProgram() {
@@ -979,8 +980,6 @@ function fallbackCopyPrompt(text, callback) {
   if (callback) callback();
 }
 
-let _pendingProgram = null;
-
 function loadPastedProgram() {
   try {
     let text = document.getElementById('programPasteArea').value.trim();
@@ -1001,7 +1000,6 @@ function loadPastedProgram() {
 
     // Build preview summary
     const strengthDays = parsed.days.filter(d => !d.type || d.type === 'strength');
-    const mobilityDays = parsed.days.filter(d => d.type === 'mobility');
     const totalExercises = strengthDays.reduce((sum, d) => sum + (d.exercises ? d.exercises.length : 0), 0);
 
     let summaryLines = parsed.days.map(d => {
@@ -1153,8 +1151,9 @@ function saveWorkout() {
   history.unshift({ date: new Date().toLocaleDateString(), log });
   if (history.length > 50) history.pop();
   saveHistory(history);
-  // Don't clear workoutData — keep inputs visible after saving
-  // User can manually switch days/sessions to start fresh
+  // Intentional: workoutData is NOT cleared here — inputs stay visible so user
+  // can review what they logged. workoutData IS cleared in confirmLoadProgram()
+  // when a new program is loaded, which is the natural reset point.
   showToast('Workout saved! ✓');
 }
 
