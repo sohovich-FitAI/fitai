@@ -31,6 +31,37 @@ button, a, [onclick] {
   <div class="bg-emerald-500 text-black font-semibold text-center py-4 rounded-2xl text-base shadow-xl">Copied to clipboard!</div>
 </div>
 
+
+<!-- Medical Disclaimer Modal — shown once on first launch -->
+<div id="disclaimerModal" class="fixed inset-0 z-50 hidden modal-bg flex items-end">
+  <div class="w-full bg-gray-900 rounded-t-3xl p-6 slide-up">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="text-3xl">⚕️</div>
+      <h3 class="font-bold text-lg text-white">Before You Get Started</h3>
+    </div>
+    <div class="bg-gray-800 rounded-2xl p-4 mb-5">
+      <p class="text-gray-200 text-sm leading-relaxed mb-3">
+        FitAI generates personalized workout programs using AI based on information you provide. This is <span class="text-white font-semibold">not medical advice</span> and is not a substitute for professional medical guidance.
+      </p>
+      <p class="text-gray-200 text-sm leading-relaxed mb-3">
+        <span class="text-amber-400 font-semibold">Consult your physician before starting any new exercise program</span> — especially if you have any health conditions, injuries, take medications that affect exercise capacity, or have been inactive for an extended period.
+      </p>
+      <p class="text-gray-200 text-sm leading-relaxed mb-3">
+        If you are under 18, a parent or guardian should review this app and consult a physician or certified youth strength and conditioning specialist before beginning any program.
+      </p>
+      <p class="text-gray-400 text-xs leading-relaxed">
+        By using FitAI you acknowledge that you assume full responsibility for your training decisions. FitAI and its developers are not liable for any injury or health issue arising from use of this app.
+      </p>
+    </div>
+    <button onclick="acceptDisclaimer()"
+      class="w-full bg-emerald-500 text-black font-bold py-5 rounded-2xl text-base mb-3"
+      style="touch-action:manipulation">
+      I Understand — Let's Go
+    </button>
+    <p class="text-gray-600 text-xs text-center">This message will not appear again.</p>
+  </div>
+</div>
+
 <!-- Video Modal -->
 <div id="videoModal" class="fixed inset-0 z-50 hidden modal-bg flex items-end">
   <div class="w-full bg-gray-900 rounded-t-3xl p-6 slide-up">
@@ -147,6 +178,15 @@ button, a, [onclick] {
     </div>
 
     <div id="claudePrompt" class="hidden">You are an elite personal trainer and strength coach. Your job is to build a genuinely personalized workout program — not a template with a name slapped on it. The quality of this program depends entirely on how deeply you understand this person before you write a single exercise.
+
+IMPORTANT — MEDICAL DISCLAIMER AND SAFETY:
+You are an AI, not a licensed physician. At the start of the conversation, before asking any intake questions, include this note:
+
+"Before we get started — FitAI programs are built by AI and are not a substitute for medical advice. If you have any health conditions, injuries, take medications that affect your heart rate or energy, or haven't exercised in a long time, please consult your doctor before starting this program. If you're under 18, have a parent or guardian review this with you.
+
+Now let's build your program — tell me a little about yourself and what you're looking to achieve."
+
+Throughout the intake, if someone discloses a significant health condition (heart condition, recent surgery, uncontrolled diabetes, chest pain during exercise, dizziness, or any condition their doctor has told them to be careful with), remind them specifically to get physician clearance for that condition before starting. Do not refuse to build the program — just note it clearly and build around the limitation they've described.
 
 IMPORTANT — HOW TO CONDUCT THIS INTAKE:
 Do not fire a list of questions all at once. Have a real conversation. Ask 2-3 questions at a time, listen carefully to the answers, and follow up on anything that matters. If someone mentions a knee injury, dig into it — which knee, what happened, what movements aggravate it, has it been treated. If someone says they play football, ask what position, what their coach says they need to improve, when their season is. The more you understand, the better the program. Do not rush to generate. Take as many rounds of questions as needed.
@@ -420,6 +460,15 @@ function init() {
   document.getElementById('dateHeader').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   populateDaySelect();
   buildWorkout();
+  // Show disclaimer on first launch only
+  if (!localStorage.getItem('fitai_disclaimer_accepted')) {
+    document.getElementById('disclaimerModal').classList.remove('hidden');
+  }
+}
+
+function acceptDisclaimer() {
+  try { localStorage.setItem('fitai_disclaimer_accepted', '1'); } catch(e) {}
+  document.getElementById('disclaimerModal').classList.add('hidden');
 }
 
 function populateDaySelect() {
