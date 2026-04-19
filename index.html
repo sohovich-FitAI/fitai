@@ -660,7 +660,7 @@ function buildNotes() {
   div.className = 'bg-gray-900 rounded-3xl p-6';
   div.innerHTML = `
     <div class="text-white font-medium mb-3">Workout Notes</div>
-    <textarea id="workout-notes" rows="3" placeholder="How did it feel? Any pain? Adjustments needed?"
+    <textarea id="workout-notes" rows="3" placeholder="Swaps, cuts, extra sets, pain, anything the AI should know..."
       class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white resize-none"
       oninput="saveInput('workout-notes', this.value)">${workoutData['workout-notes']||''}</textarea>`;
   return div;
