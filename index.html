@@ -646,7 +646,7 @@ function toggleNote(id) {
   if (!el) return;
   const isHidden = el.classList.contains('hidden');
   el.classList.toggle('hidden', !isHidden);
-  if (btn) btn.textContent = isHidden ? '📋 Hide note' : '📋 Coach's note';
+  if (btn) btn.textContent = isHidden ? '📋 Hide note' : '📋 Coach\'s note';
 }
 
 function buildExerciseCard(ex) {
