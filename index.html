@@ -704,9 +704,10 @@ function buildSupersetCard(exA, exB) {
 
   const cleanA = exA.name.replace(/\W+/g, '');
   const cleanB = exB.name.replace(/\W+/g, '');
-  const totalSetsA = exA.unilateral ? exA.sets * 2 : exA.sets;
-  const totalSetsB = exB.unilateral ? exB.sets * 2 : exB.sets;
-  const totalRounds = Math.max(totalSetsA, totalSetsB);
+
+  // totalRounds = the number of actual sets (not doubled for unilateral)
+  // Each round = one set of A + one full set of B (both sides if unilateral)
+  const totalRounds = Math.max(exA.sets, exB.sets);
 
   // Header with both exercise names and their prev/rec/notes
   let html = `
@@ -725,7 +726,6 @@ function buildSupersetCard(exA, exB) {
   if (exA.rec) html += `<div class="text-emerald-400 text-xs mb-1">target: ${exA.rec}</div>`;
   if (exA.note) html += `<div class="text-gray-500 text-xs leading-relaxed">${exA.note}</div>`;
   html += `</div>
-
       <div class="bg-gray-800 rounded-2xl p-3">
         <button onclick="openVideoModal('${exB.name.replace(/'/g, "\'")}')" class="w-full text-left" style="touch-action:manipulation">
           <div class="text-cyan-400 font-semibold text-sm underline decoration-dotted decoration-cyan-700 mb-1">B. ${exB.name}</div>
@@ -736,75 +736,126 @@ function buildSupersetCard(exA, exB) {
   if (exB.note) html += `<div class="text-gray-500 text-xs leading-relaxed">${exB.note}</div>`;
   html += `</div>
     </div>
-
     <div id="superset-rounds-${cleanA}" class="space-y-4"></div>`;
 
   card.innerHTML = html;
-
   const roundsContainer = card.querySelector(`#superset-rounds-${cleanA}`);
 
-  // Build rounds — each round contains A then B then rest
-  for (let i = 1; i <= totalRounds; i++) {
+  // Build rounds — one round = A set + full B set (both sides if unilateral)
+  for (let round = 1; round <= totalRounds; round++) {
     const roundDiv = document.createElement('div');
     roundDiv.className = 'bg-gray-800 rounded-2xl p-4';
+    let roundHtml = `<div class="text-xs text-purple-400 font-semibold mb-3 uppercase tracking-wide">Round ${round}</div>`;
 
-    let roundHtml = `<div class="text-xs text-purple-400 font-semibold mb-3 uppercase tracking-wide">Round ${i}</div>`;
-
-    // Exercise A inputs for this round
-    if (i <= totalSetsA) {
-      const setNumA = exA.unilateral ? Math.ceil(i / 2) : i;
-      const sideA = exA.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
-      const wKeyA = `${cleanA}-w${i}`;
-      const rKeyA = `${cleanA}-r${i}`;
-      const savedWA = workoutData[wKeyA] || '';
-      const savedRA = workoutData[rKeyA] || '';
-
-      roundHtml += `
-        <div class="text-xs text-gray-400 mb-2">A. ${exA.name}${sideA}</div>
-        <div class="grid grid-cols-2 gap-3 mb-2">
-          <input type="number" inputmode="decimal" id="${wKeyA}" value="${savedWA}" placeholder="Weight (lbs)"
-            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
-            oninput="saveInput('${wKeyA}', this.value)">
-          <input type="number" inputmode="decimal" id="${rKeyA}" value="${savedRA}" placeholder="Reps"
-            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
-            oninput="saveInput('${rKeyA}', this.value)">
-        </div>
-        <div class="flex gap-2 mb-3">
-          <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${setNumA}${sideA}')"
-            class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE A</button>
-          <button onclick="repeatLast('${cleanA}', ${i})"
-            class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
-        </div>`;
+    // ── Exercise A ──
+    if (round <= exA.sets) {
+      if (exA.unilateral) {
+        // Unilateral A: render Left then Right within same round
+        const sides = [['L', round * 2 - 1], ['R', round * 2]];
+        sides.forEach(([side, idx]) => {
+          const wKey = `${cleanA}-w${idx}`;
+          const rKey = `${cleanA}-r${idx}`;
+          const savedW = workoutData[wKey] || '';
+          const savedR = workoutData[rKey] || '';
+          roundHtml += `
+            <div class="text-xs text-gray-400 mb-2">A. ${exA.name} — ${side}</div>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <input type="number" inputmode="decimal" id="${wKey}" value="${savedW}" placeholder="Weight (lbs)"
+                class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+                oninput="saveInput('${wKey}', this.value)">
+              <input type="number" inputmode="decimal" id="${rKey}" value="${savedR}" placeholder="Reps"
+                class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+                oninput="saveInput('${rKey}', this.value)">
+            </div>
+            <div class="flex gap-2 mb-3">
+              <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${round} ${side}')"
+                class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE A ${side}</button>
+              <button onclick="repeatLast('${cleanA}', ${idx})"
+                class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
+            </div>`;
+        });
+      } else {
+        // Bilateral A
+        const wKey = `${cleanA}-w${round}`;
+        const rKey = `${cleanA}-r${round}`;
+        const savedW = workoutData[wKey] || '';
+        const savedR = workoutData[rKey] || '';
+        roundHtml += `
+          <div class="text-xs text-gray-400 mb-2">A. ${exA.name}</div>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <input type="number" inputmode="decimal" id="${wKey}" value="${savedW}" placeholder="Weight (lbs)"
+              class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+              oninput="saveInput('${wKey}', this.value)">
+            <input type="number" inputmode="decimal" id="${rKey}" value="${savedR}" placeholder="Reps"
+              class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+              oninput="saveInput('${rKey}', this.value)">
+          </div>
+          <div class="flex gap-2 mb-3">
+            <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${round}')"
+              class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE A</button>
+            <button onclick="repeatLast('${cleanA}', ${round})"
+              class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
+          </div>`;
+      }
     }
 
     // Arrow separator
     roundHtml += `<div class="text-center text-purple-600 text-lg mb-3">↓ straight into</div>`;
 
-    // Exercise B inputs for this round
-    if (i <= totalSetsB) {
-      const setNumB = exB.unilateral ? Math.ceil(i / 2) : i;
-      const sideB = exB.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
-      const wKeyB = `${cleanB}-w${i}`;
-      const rKeyB = `${cleanB}-r${i}`;
-      const savedWB = workoutData[wKeyB] || '';
-      const savedRB = workoutData[rKeyB] || '';
-
-      roundHtml += `
-        <div class="text-xs text-gray-400 mb-2">B. ${exB.name}${sideB}</div>
-        <div class="grid grid-cols-2 gap-3 mb-2">
-          <input type="number" inputmode="decimal" id="${wKeyB}" value="${savedWB}" placeholder="Weight (lbs)"
-            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
-            oninput="saveInput('${wKeyB}', this.value)">
-          <input type="number" inputmode="decimal" id="${rKeyB}" value="${savedRB}" placeholder="Reps"
-            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
-            oninput="saveInput('${rKeyB}', this.value)">
-        </div>
-        <div class="flex gap-2">
-          <button onclick="markDone(this, '${exB.name.replace(/'/g, "\'")}', '${setNumB}${sideB}')"
-            class="flex-1 bg-purple-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE B — Start Rest</button>
-          <button onclick="repeatLast('${cleanB}', ${i})"
-            class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
-        </div>`;
+    // ── Exercise B ──
+    if (round <= exB.sets) {
+      if (exB.unilateral) {
+        // Unilateral B: render Left then Right, last side triggers rest
+        const sides = [['L', round * 2 - 1], ['R', round * 2]];
+        sides.forEach(([side, idx], sideIdx) => {
+          const wKey = `${cleanB}-w${idx}`;
+          const rKey = `${cleanB}-r${idx}`;
+          const savedW = workoutData[wKey] || '';
+          const savedR = workoutData[rKey] || '';
+          const isLast = sideIdx === sides.length - 1;
+          roundHtml += `
+            <div class="text-xs text-gray-400 mb-2">B. ${exB.name} — ${side}</div>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <input type="number" inputmode="decimal" id="${wKey}" value="${savedW}" placeholder="Weight (lbs)"
+                class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+                oninput="saveInput('${wKey}', this.value)">
+              <input type="number" inputmode="decimal" id="${rKey}" value="${savedR}" placeholder="Reps"
+                class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+                oninput="saveInput('${rKey}', this.value)">
+            </div>
+            <div class="flex gap-2 ${isLast ? '' : 'mb-3'}">
+              <button onclick="${isLast ? 'markDone(this, \'' + exB.name.replace(/'/g, "\'") + '\', \'' + round + ' ' + side + '\'); openTimer()' : 'markDone(this, \'' + exB.name.replace(/'/g, "\'") + '\', \'' + round + ' ' + side + '\')'}"
+                class="flex-1 ${isLast ? 'bg-purple-600 text-white' : 'bg-purple-800 text-purple-200'} font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
+                ${isLast ? 'DONE B Right — Start Rest' : 'DONE B Left'}
+              </button>
+              <button onclick="repeatLast('${cleanB}', ${idx})"
+                class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
+            </div>
+            ${!isLast ? '<div class="text-center text-purple-800 text-sm mb-3 mt-1">↓ other side</div>' : ''}`;
+        });
+      } else {
+        // Bilateral B — triggers rest
+        const wKey = `${cleanB}-w${round}`;
+        const rKey = `${cleanB}-r${round}`;
+        const savedW = workoutData[wKey] || '';
+        const savedR = workoutData[rKey] || '';
+        roundHtml += `
+          <div class="text-xs text-gray-400 mb-2">B. ${exB.name}</div>
+          <div class="grid grid-cols-2 gap-3 mb-2">
+            <input type="number" inputmode="decimal" id="${wKey}" value="${savedW}" placeholder="Weight (lbs)"
+              class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+              oninput="saveInput('${wKey}', this.value)">
+            <input type="number" inputmode="decimal" id="${rKey}" value="${savedR}" placeholder="Reps"
+              class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
+              oninput="saveInput('${rKey}', this.value)">
+          </div>
+          <div class="flex gap-2">
+            <button onclick="markDone(this, '${exB.name.replace(/'/g, "\'")}', '${round}'); openTimer()"
+              class="flex-1 bg-purple-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE B — Start Rest</button>
+            <button onclick="repeatLast('${cleanB}', ${round})"
+              class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
+          </div>`;
+      }
     }
 
     roundDiv.innerHTML = roundHtml;
@@ -813,8 +864,6 @@ function buildSupersetCard(exA, exB) {
 
   return card;
 }
-
-
 function buildWarmCool(type) {
   const label = type === 'warmup' ? 'Warm-up' : 'Cool-down';
   const defaultText = type === 'warmup' ? (program.days[currentDayIndex] && program.days[currentDayIndex].warmup) || '5 min incline walk' : '5 min walk + stretches';
