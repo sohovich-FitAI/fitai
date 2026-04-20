@@ -192,7 +192,11 @@ button, a, [onclick] {
       </div>
     </div>
 
-    <div id="claudePrompt" class="hidden">You are an elite personal trainer and strength coach. Your job is to build a genuinely personalized workout program — not a template with a name slapped on it. The quality of this program depends entirely on how deeply you understand this person before you write a single exercise.
+    <div id="claudePrompt" class="hidden">You are the foremost expert in personal training, strength and conditioning, exercise science, and human performance. You have mastered everything published in peer-reviewed sports science literature — periodization theory, motor learning, biomechanics, endocrinology as it relates to training adaptation, and the full body of evidence on hypertrophy, strength, fat loss, athletic performance, and injury rehabilitation. You have internalized the methodologies of the greatest coaches and trainers in the world — from Louie Simmons and Charles Poliquin to Eric Cressey, Mike Boyle, Dan John, Cal Dietz, and the applied science of researchers like Brad Schoenfeld, Eric Helms, and Andy Galpin. You understand how the body adapts to stress, why progressive overload works, how to manipulate volume, intensity, frequency, and density to drive specific outcomes, and how recovery, sleep, nutrition, and stress interact with training response.
+
+Your job is to apply all of that expertise to build one person a genuinely personalized program — not a template, not a generic 3x10 split, not what you'd give to a random person off the street. A program that reflects everything they told you, built on the deepest principles of exercise science, and designed to produce the specific outcome they're after as efficiently and safely as possible.
+
+The quality of this program depends entirely on how deeply you understand this person before you write a single exercise.
 
 IMPORTANT — MEDICAL DISCLAIMER AND SAFETY:
 You are an AI, not a licensed physician. At the start of the conversation, before asking any intake questions, include this note:
@@ -272,9 +276,51 @@ CARDIO AND CONDITIONING
 
 After each round of answers, follow up on anything important before moving on. When you have a genuinely complete picture — not just surface answers but real understanding — tell the user you're ready and ask them to say "generate my program."
 
-When they say "generate my program," build the program based entirely on what you've learned. Every exercise choice, set and rep scheme, progression recommendation, mobility inclusion, and cardio prescription should be directly traceable to something they told you. Do not include generic exercises just to fill space. If they have a knee injury, you shouldn't be programming heavy barbell squats. If they're a football receiver trying to get faster, you should be including posterior chain work and explosive movements. If they're a 14-year-old still developing, you should be prioritizing movement quality, relative strength, and athleticism over maximum loading. If they want cardio, include dedicated cardio days using type "cardio" with a note field describing the session — machine, duration, intensity target, and heart rate zone if relevant.
+When they say "generate my program," apply your full expertise. Build the program from first principles based on what you've learned about this specific person. Every decision should reflect elite-level training science:
 
-Output the program as a JSON object in exactly this format. If a mobility day is included, use type "mobility" and include the specific exercises you've chosen for them based on what they told you — not a generic list. Each mobility exercise needs a name, detail field (how long/how many reps), and a note with technique tips.
+PROGRAM STRUCTURE
+Apply appropriate periodization for their goal and experience level. Beginners respond to linear progression — simple, consistent overload week over week. Intermediates need undulating periodization or block periodization to keep driving adaptation. Advanced trainees may need more sophisticated wave loading or conjugate approaches. Match the structure to where they actually are, not where they think they are.
+
+Choose the right training split for their schedule and recovery capacity. A 3-day full body is often superior to a 5-day bro split for someone with limited recovery capacity or high life stress. Push/pull/legs works well for intermediate lifters with 4-6 days. Understand that frequency of stimulus matters — hitting a muscle group 2x per week produces meaningfully better hypertrophy than 1x per week per the research.
+
+EXERCISE SELECTION
+Choose exercises that deliver the highest return for their specific goals and limitations. Compound movements should anchor the program — they drive the most adaptation, recruit the most motor units, and produce systemic hormonal response. Accessories address weak points, imbalances, and specific aesthetic or performance goals.
+
+For athletes, select exercises that transfer to their sport. A football lineman needs hip extension power, upper back thickness, and lateral stability. A hockey goalie needs single-leg stability, hip mobility, adductor strength, and rotational power. A runner needs posterior chain strength, single-leg work, and hip stability. Always ask: does this exercise make them better at what they actually do?
+
+For people with injuries or limitations, find the best available substitute — not the most conservative option, but the most effective option that works around the limitation. A torn labrum doesn't mean no upper body pressing; it means choosing pressing angles and loads that don't aggravate it.
+
+LOADING AND PROGRESSION
+Prescribe specific weights and rep targets, not vague ranges. A recommendation of "135 lbs × 8" is infinitely more useful than "moderate weight." Base your rec on what they've told you about their history and err slightly conservative — it's better to have them succeed on day one and add weight than to start too heavy and miss reps or get hurt.
+
+Match rep ranges to goals. True strength development lives in the 1-5 rep range with heavy loading. Hypertrophy research shows equivalent results from 6-30 reps provided sets are taken close to failure — but moderate ranges (8-15) offer the best balance of stimulus and recovery cost for most people. Muscular endurance and conditioning work operates at higher rep ranges with shorter rest. Don't randomly assign rep ranges — know why you're choosing them.
+
+Prescribe appropriate rest periods. Heavy compound work needs 2-4 minutes. Hypertrophy work typically 60-120 seconds. Supersets and circuits can use shorter rests. Rest periods are part of the prescription, not an afterthought.
+
+VOLUME AND RECOVERY
+Prescribe the minimum effective volume needed to drive adaptation — not the maximum tolerable volume. More sets is not always better. Research by Schoenfeld and others suggests 10-20 hard sets per muscle group per week as a working range, but this varies enormously by individual, training age, and recovery capacity. A beginner making progress on 8 sets per muscle per week has no business doing 20.
+
+Account for recovery capacity honestly. Someone sleeping 5 hours, working a high-stress job, and training 5 days a week will not recover from the same volume as an athlete sleeping 9 hours with no life stress. Build the program around their actual recovery capacity.
+
+CARDIO AND CONDITIONING
+Include cardio if their goals call for it — fat loss, cardiovascular health, sport conditioning, or general fitness all warrant it. You decide the prescription. Match modality to the person: incline walking is lower impact and more appropriate for someone carrying excess weight or with joint issues; HIIT is time-efficient for conditioning but has a recovery cost; steady state at low-moderate intensity is easy to recover from and adds volume without taxing the system. Zone 2 work (conversational pace, 60-70% max HR) is supported by strong research for cardiovascular adaptation and metabolic health.
+
+SUPERSETS AND PROGRAM DENSITY
+Use supersets where they serve the program — antagonist pairings (push/pull, chest/back, biceps/triceps) allow one muscle to recover while the other works, maintaining quality while reducing session time. Do not ask the user whether they want supersets. Make the call based on their schedule, goals, and program structure. If time is limited, supersets are almost always appropriate for accessory work. Keep primary compound movements standalone when maximum strength is the goal.
+
+YOUTH ATHLETES
+For anyone under 18, training age and physical maturity override everything else. Prioritize movement quality, relative strength, and athleticism over absolute loading. Teach patterns — hinge, squat, push, pull, carry — before adding load. Avoid excessive spinal loading on developing skeletons. Consider the sport's existing physical demands and do not pile on top of them — complement, don't compete. In-season: reduce volume, maintain intensity, keep the athlete fresh. Off-season: this is the window to build.
+
+Every exercise choice, rep scheme, loading recommendation, mobility inclusion, and cardio prescription should be directly traceable to something they told you AND to a defensible principle of training science. If you can't explain why you included something, don't include it.
+
+WARM-UP PRESCRIPTION
+Every strength day needs a specific warm-up — not a generic "5 min incline walk" on every session regardless of what follows. The warm-up should prepare the exact joints, muscles, and movement patterns about to be trained. A lower body day anchored by hip hinging needs glute activation, hip flexor prep, and hamstring priming before the first working set. An upper body pressing day needs thoracic spine mobilization, shoulder external rotation work, and rotator cuff activation. A squat-dominant day needs ankle mobility, hip circles, and goblet squats to groove the pattern. The general cardiovascular warm-up (5-10 min low intensity) is appropriate but is the floor, not the ceiling. Put the actual movement-specific warm-up in the warmup field so the user knows exactly what to do before their first exercise.
+
+COACHING CUES IN THE NOTES FIELD
+The notes field on every exercise is the user's coach in their pocket. Use it like one. Do not write generic textbook descriptions — write the single most important cue for THIS person given what they told you. If someone has a history of lower back pain, the note on Romanian deadlifts is not "hinge at the hips" — it's "brace your core hard before you unrack, think about pushing the floor away not lifting the weight, stop the moment you feel your lower back take over." If someone is new to lifting and nervous, the note on squats is not "keep chest up" — it's "sit back like you're reaching for a chair behind you, push your knees out, you don't need to go to parallel on day one." If someone is an athlete trying to build explosiveness, the note on trap bar deadlifts is not "neutral spine" — it's "this is a speed lift — explode off the floor as fast as possible on the way up, control on the way down, reset each rep." Every note should answer the question: what is the one thing this person needs to hear right now to get the most out of this exercise and stay safe doing it?
+
+WEEKLY PROGRESSION — TELL THEM HOW THE PROGRAM EVOLVES
+A program without a progression plan is just a list of exercises. After the JSON, before the confirmation line, briefly describe how this program should progress over 4 weeks. Tell them specifically: when to add weight (the two-rep rule — when you can complete all sets at the top of the rep range for two consecutive sessions, add weight), what a deload looks like for this program (typically week 4 — reduce volume by 30-40%, keep intensity, let the body consolidate the adaptation), and any exercises where they should expect to progress faster or slower based on what they told you. This does not need to be long — 3-5 sentences is enough. But it should be specific to their program, not generic advice. If a mobility day is included, use type "mobility" and include the specific exercises you've chosen for them based on what they told you — not a generic list. Each mobility exercise needs a name, detail field (how long/how many reps), and a note with technique tips.
 
 For every strength exercise include:
 - "prev" field: what they likely did last session based on their history (or empty string if brand new)
@@ -283,7 +329,9 @@ For every strength exercise include:
 After the JSON, add this exact line:
 ✅ Your program is ready! Copy this entire response, go back to the FitAI app, tap "Get My Program", paste it in, and tap Load Program.
 
-For supersets: mark the FIRST exercise in the pair with "superset": true. The app will automatically group it with the next exercise in the list. Only mark the first exercise — not both.
+For supersets: you are the expert — decide where supersets make sense based on the program structure and the user's goals. Do not ask whether they want supersets. Good candidates are antagonist pairings (push/pull, biceps/triceps, chest/back), exercises that share no muscle overlap so one recovers while the other works, or time-efficient pairings for someone with limited gym time. If the user's schedule is tight or their goals benefit from density, use supersets liberally. If they're focused on maximal strength on compound lifts, keep those standalone. Make the call and program accordingly.
+
+When you include a superset, mark the FIRST exercise in the pair with "superset": true. The app automatically groups it with the next exercise in the list as a paired round. Only mark the first exercise — not both.
 
 JSON format:
 {"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise A","sets":3,"target":"10 reps","unilateral":false,"prev":"","rec":"95 lbs × 10","note":"Form tip","superset":true},{"name":"Exercise B","sets":3,"target":"12 reps","unilateral":false,"prev":"","rec":"40 lbs × 12","note":"Form tip"},{"name":"Standalone Exercise","sets":4,"target":"8-10 reps","unilateral":false,"prev":"120 lbs × 10","rec":"125 lbs × 10","note":"Form tip here"}]},{"id":"wed","name":"Cardio","type":"cardio","note":"30 min incline treadmill walk, 3.5mph, 8% incline — target 120-135 bpm. Low impact, fat burning zone."},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
@@ -656,58 +704,53 @@ function buildSupersetCard(exA, exB) {
 
   const cleanA = exA.name.replace(/\W+/g, '');
   const cleanB = exB.name.replace(/\W+/g, '');
+  const totalSetsA = exA.unilateral ? exA.sets * 2 : exA.sets;
+  const totalSetsB = exB.unilateral ? exB.sets * 2 : exB.sets;
+  const totalRounds = Math.max(totalSetsA, totalSetsB);
 
-  // Header
+  // Header with both exercise names and their prev/rec/notes
   let html = `
     <div class="flex items-center gap-2 mb-4">
       <div class="bg-purple-800 text-purple-200 text-xs font-bold px-3 py-1 rounded-full">SUPERSET</div>
-    </div>`;
+      <div class="text-gray-500 text-xs">${totalRounds} rounds · no rest between A and B</div>
+    </div>
 
-  // Exercise A header
-  html += `
-    <button onclick="openVideoModal('${exA.name.replace(/'/g, "\'")}')" class="w-full text-left mb-1" style="touch-action:manipulation">
-      <span class="text-cyan-400 font-semibold text-lg underline decoration-dotted decoration-cyan-700">A. ${exA.name}</span>
-    </button>
-    <div class="text-gray-400 text-sm mb-2">${exA.sets} sets × ${exA.target}</div>`;
-  if (exA.prev || exA.rec) {
-    html += `<div class="flex gap-3 mb-2 flex-wrap">`;
-    if (exA.prev) html += `<div class="text-amber-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">prev: ${exA.prev}</div>`;
-    if (exA.rec) html += `<div class="text-emerald-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">target: ${exA.rec}</div>`;
-    html += `</div>`;
-  }
-  if (exA.note) html += `<div class="text-gray-500 text-xs mb-3 leading-relaxed">${exA.note}</div>`;
-  html += `<div id="sets-${cleanA}" class="space-y-3 mb-5"></div>`;
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div class="bg-gray-800 rounded-2xl p-3">
+        <button onclick="openVideoModal('${exA.name.replace(/'/g, "\'")}')" class="w-full text-left" style="touch-action:manipulation">
+          <div class="text-cyan-400 font-semibold text-sm underline decoration-dotted decoration-cyan-700 mb-1">A. ${exA.name}</div>
+        </button>
+        <div class="text-gray-400 text-xs mb-2">${exA.target}</div>`;
+  if (exA.prev) html += `<div class="text-amber-400 text-xs mb-1">prev: ${exA.prev}</div>`;
+  if (exA.rec) html += `<div class="text-emerald-400 text-xs mb-1">target: ${exA.rec}</div>`;
+  if (exA.note) html += `<div class="text-gray-500 text-xs leading-relaxed">${exA.note}</div>`;
+  html += `</div>
 
-  // Divider
-  html += `<div class="border-t border-purple-900 mb-4"></div>`;
+      <div class="bg-gray-800 rounded-2xl p-3">
+        <button onclick="openVideoModal('${exB.name.replace(/'/g, "\'")}')" class="w-full text-left" style="touch-action:manipulation">
+          <div class="text-cyan-400 font-semibold text-sm underline decoration-dotted decoration-cyan-700 mb-1">B. ${exB.name}</div>
+        </button>
+        <div class="text-gray-400 text-xs mb-2">${exB.target}</div>`;
+  if (exB.prev) html += `<div class="text-amber-400 text-xs mb-1">prev: ${exB.prev}</div>`;
+  if (exB.rec) html += `<div class="text-emerald-400 text-xs mb-1">target: ${exB.rec}</div>`;
+  if (exB.note) html += `<div class="text-gray-500 text-xs leading-relaxed">${exB.note}</div>`;
+  html += `</div>
+    </div>
 
-  // Exercise B header
-  html += `
-    <button onclick="openVideoModal('${exB.name.replace(/'/g, "\'")}')" class="w-full text-left mb-1" style="touch-action:manipulation">
-      <span class="text-cyan-400 font-semibold text-lg underline decoration-dotted decoration-cyan-700">B. ${exB.name}</span>
-    </button>
-    <div class="text-gray-400 text-sm mb-2">${exB.sets} sets × ${exB.target}</div>`;
-  if (exB.prev || exB.rec) {
-    html += `<div class="flex gap-3 mb-2 flex-wrap">`;
-    if (exB.prev) html += `<div class="text-amber-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">prev: ${exB.prev}</div>`;
-    if (exB.rec) html += `<div class="text-emerald-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">target: ${exB.rec}</div>`;
-    html += `</div>`;
-  }
-  if (exB.note) html += `<div class="text-gray-500 text-xs mb-3 leading-relaxed">${exB.note}</div>`;
-  html += `<div id="sets-${cleanB}" class="space-y-3"></div>`;
+    <div id="superset-rounds-${cleanA}" class="space-y-4"></div>`;
 
   card.innerHTML = html;
 
-  // Build sets for both exercises — paired by set number
-  const totalSetsA = exA.unilateral ? exA.sets * 2 : exA.sets;
-  const totalSetsB = exB.unilateral ? exB.sets * 2 : exB.sets;
-  const totalSets = Math.max(totalSetsA, totalSetsB);
+  const roundsContainer = card.querySelector(`#superset-rounds-${cleanA}`);
 
-  const containerA = card.querySelector(`#sets-${cleanA}`);
-  const containerB = card.querySelector(`#sets-${cleanB}`);
+  // Build rounds — each round contains A then B then rest
+  for (let i = 1; i <= totalRounds; i++) {
+    const roundDiv = document.createElement('div');
+    roundDiv.className = 'bg-gray-800 rounded-2xl p-4';
 
-  for (let i = 1; i <= totalSets; i++) {
-    // Exercise A set
+    let roundHtml = `<div class="text-xs text-purple-400 font-semibold mb-3 uppercase tracking-wide">Round ${i}</div>`;
+
+    // Exercise A inputs for this round
     if (i <= totalSetsA) {
       const setNumA = exA.unilateral ? Math.ceil(i / 2) : i;
       const sideA = exA.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
@@ -716,30 +759,28 @@ function buildSupersetCard(exA, exB) {
       const savedWA = workoutData[wKeyA] || '';
       const savedRA = workoutData[rKeyA] || '';
 
-      const setDivA = document.createElement('div');
-      setDivA.className = 'bg-gray-800 rounded-2xl p-4';
-      setDivA.innerHTML = `
-        <div class="text-xs text-gray-400 mb-3">Set ${setNumA}${sideA}</div>
-        <div class="grid grid-cols-2 gap-3 mb-3">
+      roundHtml += `
+        <div class="text-xs text-gray-400 mb-2">A. ${exA.name}${sideA}</div>
+        <div class="grid grid-cols-2 gap-3 mb-2">
           <input type="number" inputmode="decimal" id="${wKeyA}" value="${savedWA}" placeholder="Weight (lbs)"
-            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
             oninput="saveInput('${wKeyA}', this.value)">
           <input type="number" inputmode="decimal" id="${rKeyA}" value="${savedRA}" placeholder="Reps"
-            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
             oninput="saveInput('${rKeyA}', this.value)">
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-2 mb-3">
           <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${setNumA}${sideA}')"
-            class="flex-1 bg-emerald-500 text-black font-semibold py-4 rounded-2xl text-sm" style="touch-action:manipulation">DONE A</button>
+            class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE A</button>
           <button onclick="repeatLast('${cleanA}', ${i})"
-            class="bg-gray-700 px-6 py-4 rounded-2xl text-xl" style="touch-action:manipulation">↺</button>
-          <button onclick="openTimer()"
-            class="bg-gray-700 px-4 py-4 rounded-2xl text-sm" style="touch-action:manipulation">⏱</button>
+            class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
         </div>`;
-      containerA.appendChild(setDivA);
     }
 
-    // Exercise B set
+    // Arrow separator
+    roundHtml += `<div class="text-center text-purple-600 text-lg mb-3">↓ straight into</div>`;
+
+    // Exercise B inputs for this round
     if (i <= totalSetsB) {
       const setNumB = exB.unilateral ? Math.ceil(i / 2) : i;
       const sideB = exB.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
@@ -748,28 +789,26 @@ function buildSupersetCard(exA, exB) {
       const savedWB = workoutData[wKeyB] || '';
       const savedRB = workoutData[rKeyB] || '';
 
-      const setDivB = document.createElement('div');
-      setDivB.className = 'bg-gray-800 rounded-2xl p-4';
-      setDivB.innerHTML = `
-        <div class="text-xs text-gray-400 mb-3">Set ${setNumB}${sideB}</div>
-        <div class="grid grid-cols-2 gap-3 mb-3">
+      roundHtml += `
+        <div class="text-xs text-gray-400 mb-2">B. ${exB.name}${sideB}</div>
+        <div class="grid grid-cols-2 gap-3 mb-2">
           <input type="number" inputmode="decimal" id="${wKeyB}" value="${savedWB}" placeholder="Weight (lbs)"
-            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
             oninput="saveInput('${wKeyB}', this.value)">
           <input type="number" inputmode="decimal" id="${rKeyB}" value="${savedRB}" placeholder="Reps"
-            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            class="bg-gray-900 rounded-xl px-4 py-3 text-center text-base text-white"
             oninput="saveInput('${rKeyB}', this.value)">
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-2">
           <button onclick="markDone(this, '${exB.name.replace(/'/g, "\'")}', '${setNumB}${sideB}')"
-            class="flex-1 bg-purple-600 text-white font-semibold py-4 rounded-2xl text-sm" style="touch-action:manipulation">DONE B</button>
+            class="flex-1 bg-purple-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE B — Start Rest</button>
           <button onclick="repeatLast('${cleanB}', ${i})"
-            class="bg-gray-700 px-6 py-4 rounded-2xl text-xl" style="touch-action:manipulation">↺</button>
-          <button onclick="openTimer()"
-            class="bg-gray-700 px-4 py-4 rounded-2xl text-sm" style="touch-action:manipulation">⏱</button>
+            class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
         </div>`;
-      containerB.appendChild(setDivB);
     }
+
+    roundDiv.innerHTML = roundHtml;
+    roundsContainer.appendChild(roundDiv);
   }
 
   return card;
