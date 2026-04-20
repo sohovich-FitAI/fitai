@@ -639,6 +639,16 @@ function buildWorkout() {
   }
 }
 
+// ==================== COLLAPSIBLE NOTES ====================
+function toggleNote(id) {
+  const el = document.getElementById(id);
+  const btn = document.getElementById(id + '-btn');
+  if (!el) return;
+  const isHidden = el.classList.contains('hidden');
+  el.classList.toggle('hidden', !isHidden);
+  if (btn) btn.textContent = isHidden ? '📋 Hide note' : '📋 Coach's note';
+}
+
 function buildExerciseCard(ex) {
   const card = document.createElement('div');
   card.className = 'bg-gray-900 rounded-3xl p-6';
@@ -657,7 +667,15 @@ function buildExerciseCard(ex) {
     html += `</div>`;
   }
 
-  if (ex.note) html += `<div class="text-gray-500 text-xs mb-4 leading-relaxed">${ex.note}</div>`;
+  if (ex.note) {
+    const noteId = `note-${cleanName}`;
+    html += `
+      <button id="${noteId}-btn" onclick="toggleNote('${noteId}')"
+        class="text-xs text-gray-500 mb-2 text-left hover:text-gray-300" style="touch-action:manipulation">
+        📋 Coach's note
+      </button>
+      <div id="${noteId}" class="hidden text-gray-200 text-sm mb-4 leading-relaxed bg-gray-800 rounded-xl px-3 py-2">${ex.note}</div>`;
+  }
   html += `<div id="sets-${cleanName}" class="space-y-3"></div>`;
   card.innerHTML = html;
 
@@ -724,7 +742,14 @@ function buildSupersetCard(exA, exB) {
         <div class="text-gray-400 text-xs mb-2">${exA.target}</div>`;
   if (exA.prev) html += `<div class="text-amber-400 text-xs mb-1">prev: ${exA.prev}</div>`;
   if (exA.rec) html += `<div class="text-emerald-400 text-xs mb-1">target: ${exA.rec}</div>`;
-  if (exA.note) html += `<div class="text-gray-500 text-xs leading-relaxed">${exA.note}</div>`;
+  if (exA.note) {
+    html += `
+      <button id="snote-${cleanA}-btn" onclick="toggleNote('snote-${cleanA}')"
+        class="text-xs text-gray-500 mt-1 text-left hover:text-gray-300" style="touch-action:manipulation">
+        📋 Coach's note
+      </button>
+      <div id="snote-${cleanA}" class="hidden text-gray-200 text-sm mt-1 leading-relaxed">${exA.note}</div>`;
+  }
   html += `</div>
       <div class="bg-gray-800 rounded-2xl p-3">
         <button onclick="openVideoModal('${exB.name.replace(/'/g, "\'")}')" class="w-full text-left" style="touch-action:manipulation">
@@ -733,7 +758,14 @@ function buildSupersetCard(exA, exB) {
         <div class="text-gray-400 text-xs mb-2">${exB.target}</div>`;
   if (exB.prev) html += `<div class="text-amber-400 text-xs mb-1">prev: ${exB.prev}</div>`;
   if (exB.rec) html += `<div class="text-emerald-400 text-xs mb-1">target: ${exB.rec}</div>`;
-  if (exB.note) html += `<div class="text-gray-500 text-xs leading-relaxed">${exB.note}</div>`;
+  if (exB.note) {
+    html += `
+      <button id="snote-${cleanB}-btn" onclick="toggleNote('snote-${cleanB}')"
+        class="text-xs text-gray-500 mt-1 text-left hover:text-gray-300" style="touch-action:manipulation">
+        📋 Coach's note
+      </button>
+      <div id="snote-${cleanB}" class="hidden text-gray-200 text-sm mt-1 leading-relaxed">${exB.note}</div>`;
+  }
   html += `</div>
     </div>
     <div id="superset-rounds-${cleanA}" class="space-y-4"></div>`;
