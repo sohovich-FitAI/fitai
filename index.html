@@ -80,6 +80,21 @@ button, a, [onclick] {
   </div>
 </div>
 
+
+<!-- Mobility Timer Overlay — large fullscreen timer for mobility exercises -->
+<div id="mobTimerOverlay" class="fixed inset-0 z-50 hidden modal-bg flex flex-col items-center justify-center">
+  <div class="text-center px-8">
+    <div id="mobTimerOverlayName" class="text-gray-400 text-base mb-2"></div>
+    <div id="mobTimerOverlaySide" class="text-amber-400 text-lg font-semibold mb-4"></div>
+    <div id="mobTimerOverlayDisplay" class="text-9xl font-mono font-bold text-white mb-8" style="font-size:7rem">0:00</div>
+    <button id="mobTimerOverlayDone" onclick="closeMobTimerOverlay()"
+      class="w-64 bg-emerald-500 text-black font-bold py-5 rounded-2xl text-xl"
+      style="touch-action:manipulation">
+      Done
+    </button>
+  </div>
+</div>
+
 <!-- Rest Timer Modal -->
 <div id="timerModal" class="fixed inset-0 z-50 hidden modal-bg flex items-center justify-center">
   <div class="bg-gray-900 rounded-3xl p-8 mx-4 w-full max-w-sm slide-up text-center">
@@ -247,9 +262,17 @@ RECOVERY AND LIFESTYLE
 - Do they use any recovery tools — massage, foam rolling, sauna, compression
 - How do they typically feel 24-48 hours after hard training? Extremely sore, mildly sore, or do they recover quickly? This tells you a lot about appropriate volume.
 
+CARDIO AND CONDITIONING
+- Do they want cardio included in their program? If so, how much and what type — steady state (treadmill, bike, elliptical), HIIT, incline walking, rowing, swimming, or something else?
+- What is the cardio goal — fat loss, cardiovascular health, endurance, sport conditioning, or general fitness?
+- Do they prefer dedicated cardio days, cardio tagged onto the end of lifting days, or both?
+- What equipment is available for cardio — treadmill, stationary bike, elliptical, rower, outdoor running, stairs?
+- Any cardio limitations — knee or joint issues that rule out running, for example
+- For weight loss goals specifically: make sure cardio programming complements the strength work without creating excessive fatigue that undermines recovery. Steady state and incline walking are generally better choices than high-impact cardio for people new to training or carrying extra weight.
+
 After each round of answers, follow up on anything important before moving on. When you have a genuinely complete picture — not just surface answers but real understanding — tell the user you're ready and ask them to say "generate my program."
 
-When they say "generate my program," build the program based entirely on what you've learned. Every exercise choice, set and rep scheme, progression recommendation, and mobility inclusion should be directly traceable to something they told you. Do not include generic exercises just to fill space. If they have a knee injury, you shouldn't be programming heavy barbell squats. If they're a football receiver trying to get faster, you should be including posterior chain work and explosive movements. If they're a 14-year-old still developing, you should be prioritizing movement quality, relative strength, and athleticism over maximum loading.
+When they say "generate my program," build the program based entirely on what you've learned. Every exercise choice, set and rep scheme, progression recommendation, mobility inclusion, and cardio prescription should be directly traceable to something they told you. Do not include generic exercises just to fill space. If they have a knee injury, you shouldn't be programming heavy barbell squats. If they're a football receiver trying to get faster, you should be including posterior chain work and explosive movements. If they're a 14-year-old still developing, you should be prioritizing movement quality, relative strength, and athleticism over maximum loading. If they want cardio, include dedicated cardio days using type "cardio" with a note field describing the session — machine, duration, intensity target, and heart rate zone if relevant.
 
 Output the program as a JSON object in exactly this format. If a mobility day is included, use type "mobility" and include the specific exercises you've chosen for them based on what they told you — not a generic list. Each mobility exercise needs a name, detail field (how long/how many reps), and a note with technique tips.
 
@@ -260,8 +283,10 @@ For every strength exercise include:
 After the JSON, add this exact line:
 ✅ Your program is ready! Copy this entire response, go back to the FitAI app, tap "Get My Program", paste it in, and tap Load Program.
 
+For supersets: mark the FIRST exercise in the pair with "superset": true. The app will automatically group it with the next exercise in the list. Only mark the first exercise — not both.
+
 JSON format:
-{"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise Name","sets":4,"target":"8-10 reps","unilateral":false,"prev":"120 lbs × 10","rec":"125 lbs × 10","note":"Form tip here"}]},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
+{"days":[{"id":"mon","name":"Day 1 – Lower Focus","warmup":"5 min incline walk","type":"strength","exercises":[{"name":"Exercise A","sets":3,"target":"10 reps","unilateral":false,"prev":"","rec":"95 lbs × 10","note":"Form tip","superset":true},{"name":"Exercise B","sets":3,"target":"12 reps","unilateral":false,"prev":"","rec":"40 lbs × 12","note":"Form tip"},{"name":"Standalone Exercise","sets":4,"target":"8-10 reps","unilateral":false,"prev":"120 lbs × 10","rec":"125 lbs × 10","note":"Form tip here"}]},{"id":"wed","name":"Cardio","type":"cardio","note":"30 min incline treadmill walk, 3.5mph, 8% incline — target 120-135 bpm. Low impact, fat burning zone."},{"id":"thu","name":"Mobility & Recovery","type":"mobility","exercises":[{"name":"Hip Flexor Stretch","detail":"60 sec each side, 2 rounds","note":"Keep hips square, squeeze glute of back leg"}]}]}</div>
 
     <div class="text-gray-500 text-xs mb-2 text-center">↓ Paste your AI's full response here ↓</div>
     <textarea id="programPasteArea" class="w-full bg-gray-800 rounded-2xl p-4 text-sm text-white h-32 mb-2" placeholder="Paste your AI's full response here..."></textarea>
@@ -529,7 +554,21 @@ function buildWorkout() {
   if (effectiveType === 'strength') {
     titleEl.textContent = day ? day.name : 'Strength Workout';
     content.appendChild(buildWarmCool('warmup'));
-    if (day && day.exercises) day.exercises.forEach(ex => content.appendChild(buildExerciseCard(ex)));
+    if (day && day.exercises) {
+      const exercises = day.exercises;
+      let j = 0;
+      while (j < exercises.length) {
+        const ex = exercises[j];
+        // If this exercise is marked superset, group it with the next one
+        if (ex.superset && j + 1 < exercises.length) {
+          content.appendChild(buildSupersetCard(ex, exercises[j + 1]));
+          j += 2;
+        } else {
+          content.appendChild(buildExerciseCard(ex));
+          j++;
+        }
+      }
+    }
     content.appendChild(buildWarmCool('cooldown'));
     content.appendChild(buildNormatec());
     content.appendChild(buildNotes());
@@ -611,6 +650,132 @@ function buildExerciseCard(ex) {
   return card;
 }
 
+function buildSupersetCard(exA, exB) {
+  const card = document.createElement('div');
+  card.className = 'bg-gray-900 rounded-3xl p-6 border border-purple-800';
+
+  const cleanA = exA.name.replace(/\W+/g, '');
+  const cleanB = exB.name.replace(/\W+/g, '');
+
+  // Header
+  let html = `
+    <div class="flex items-center gap-2 mb-4">
+      <div class="bg-purple-800 text-purple-200 text-xs font-bold px-3 py-1 rounded-full">SUPERSET</div>
+    </div>`;
+
+  // Exercise A header
+  html += `
+    <button onclick="openVideoModal('${exA.name.replace(/'/g, "\'")}')" class="w-full text-left mb-1" style="touch-action:manipulation">
+      <span class="text-cyan-400 font-semibold text-lg underline decoration-dotted decoration-cyan-700">A. ${exA.name}</span>
+    </button>
+    <div class="text-gray-400 text-sm mb-2">${exA.sets} sets × ${exA.target}</div>`;
+  if (exA.prev || exA.rec) {
+    html += `<div class="flex gap-3 mb-2 flex-wrap">`;
+    if (exA.prev) html += `<div class="text-amber-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">prev: ${exA.prev}</div>`;
+    if (exA.rec) html += `<div class="text-emerald-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">target: ${exA.rec}</div>`;
+    html += `</div>`;
+  }
+  if (exA.note) html += `<div class="text-gray-500 text-xs mb-3 leading-relaxed">${exA.note}</div>`;
+  html += `<div id="sets-${cleanA}" class="space-y-3 mb-5"></div>`;
+
+  // Divider
+  html += `<div class="border-t border-purple-900 mb-4"></div>`;
+
+  // Exercise B header
+  html += `
+    <button onclick="openVideoModal('${exB.name.replace(/'/g, "\'")}')" class="w-full text-left mb-1" style="touch-action:manipulation">
+      <span class="text-cyan-400 font-semibold text-lg underline decoration-dotted decoration-cyan-700">B. ${exB.name}</span>
+    </button>
+    <div class="text-gray-400 text-sm mb-2">${exB.sets} sets × ${exB.target}</div>`;
+  if (exB.prev || exB.rec) {
+    html += `<div class="flex gap-3 mb-2 flex-wrap">`;
+    if (exB.prev) html += `<div class="text-amber-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">prev: ${exB.prev}</div>`;
+    if (exB.rec) html += `<div class="text-emerald-400 text-xs bg-gray-800 px-3 py-1 rounded-xl">target: ${exB.rec}</div>`;
+    html += `</div>`;
+  }
+  if (exB.note) html += `<div class="text-gray-500 text-xs mb-3 leading-relaxed">${exB.note}</div>`;
+  html += `<div id="sets-${cleanB}" class="space-y-3"></div>`;
+
+  card.innerHTML = html;
+
+  // Build sets for both exercises — paired by set number
+  const totalSetsA = exA.unilateral ? exA.sets * 2 : exA.sets;
+  const totalSetsB = exB.unilateral ? exB.sets * 2 : exB.sets;
+  const totalSets = Math.max(totalSetsA, totalSetsB);
+
+  const containerA = card.querySelector(`#sets-${cleanA}`);
+  const containerB = card.querySelector(`#sets-${cleanB}`);
+
+  for (let i = 1; i <= totalSets; i++) {
+    // Exercise A set
+    if (i <= totalSetsA) {
+      const setNumA = exA.unilateral ? Math.ceil(i / 2) : i;
+      const sideA = exA.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
+      const wKeyA = `${cleanA}-w${i}`;
+      const rKeyA = `${cleanA}-r${i}`;
+      const savedWA = workoutData[wKeyA] || '';
+      const savedRA = workoutData[rKeyA] || '';
+
+      const setDivA = document.createElement('div');
+      setDivA.className = 'bg-gray-800 rounded-2xl p-4';
+      setDivA.innerHTML = `
+        <div class="text-xs text-gray-400 mb-3">Set ${setNumA}${sideA}</div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <input type="number" inputmode="decimal" id="${wKeyA}" value="${savedWA}" placeholder="Weight (lbs)"
+            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            oninput="saveInput('${wKeyA}', this.value)">
+          <input type="number" inputmode="decimal" id="${rKeyA}" value="${savedRA}" placeholder="Reps"
+            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            oninput="saveInput('${rKeyA}', this.value)">
+        </div>
+        <div class="flex gap-3">
+          <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${setNumA}${sideA}')"
+            class="flex-1 bg-emerald-500 text-black font-semibold py-4 rounded-2xl text-sm" style="touch-action:manipulation">DONE A</button>
+          <button onclick="repeatLast('${cleanA}', ${i})"
+            class="bg-gray-700 px-6 py-4 rounded-2xl text-xl" style="touch-action:manipulation">↺</button>
+          <button onclick="openTimer()"
+            class="bg-gray-700 px-4 py-4 rounded-2xl text-sm" style="touch-action:manipulation">⏱</button>
+        </div>`;
+      containerA.appendChild(setDivA);
+    }
+
+    // Exercise B set
+    if (i <= totalSetsB) {
+      const setNumB = exB.unilateral ? Math.ceil(i / 2) : i;
+      const sideB = exB.unilateral ? (i % 2 === 1 ? ' L' : ' R') : '';
+      const wKeyB = `${cleanB}-w${i}`;
+      const rKeyB = `${cleanB}-r${i}`;
+      const savedWB = workoutData[wKeyB] || '';
+      const savedRB = workoutData[rKeyB] || '';
+
+      const setDivB = document.createElement('div');
+      setDivB.className = 'bg-gray-800 rounded-2xl p-4';
+      setDivB.innerHTML = `
+        <div class="text-xs text-gray-400 mb-3">Set ${setNumB}${sideB}</div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <input type="number" inputmode="decimal" id="${wKeyB}" value="${savedWB}" placeholder="Weight (lbs)"
+            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            oninput="saveInput('${wKeyB}', this.value)">
+          <input type="number" inputmode="decimal" id="${rKeyB}" value="${savedRB}" placeholder="Reps"
+            class="bg-gray-900 rounded-xl px-4 py-4 text-center text-lg text-white"
+            oninput="saveInput('${rKeyB}', this.value)">
+        </div>
+        <div class="flex gap-3">
+          <button onclick="markDone(this, '${exB.name.replace(/'/g, "\'")}', '${setNumB}${sideB}')"
+            class="flex-1 bg-purple-600 text-white font-semibold py-4 rounded-2xl text-sm" style="touch-action:manipulation">DONE B</button>
+          <button onclick="repeatLast('${cleanB}', ${i})"
+            class="bg-gray-700 px-6 py-4 rounded-2xl text-xl" style="touch-action:manipulation">↺</button>
+          <button onclick="openTimer()"
+            class="bg-gray-700 px-4 py-4 rounded-2xl text-sm" style="touch-action:manipulation">⏱</button>
+        </div>`;
+      containerB.appendChild(setDivB);
+    }
+  }
+
+  return card;
+}
+
+
 function buildWarmCool(type) {
   const label = type === 'warmup' ? 'Warm-up' : 'Cool-down';
   const defaultText = type === 'warmup' ? (program.days[currentDayIndex] && program.days[currentDayIndex].warmup) || '5 min incline walk' : '5 min walk + stretches';
@@ -677,11 +842,14 @@ function buildCardio() {
   return div;
 }
 
+function isTwoSided(detail) {
+  return /each side|each leg|each arm|per side|per leg|per arm/i.test(detail);
+}
+
 function buildMobility(programDay) {
   const div = document.createElement('div');
   div.className = 'bg-gray-900 rounded-3xl p-6';
 
-  // Use program-defined mobility exercises if available, else fall back to default
   const routine = (programDay && programDay.exercises && programDay.exercises.length)
     ? programDay.exercises.map(ex => ({ name: ex.name, detail: ex.detail || ex.target || '', note: ex.note || '' }))
     : MOBILITY_ROUTINE;
@@ -698,6 +866,8 @@ function buildMobility(programDay) {
   routine.forEach((item, i) => {
     const checked = workoutData[`mob-${i}`] === '1';
     const logged = workoutData[`mob-time-${i}`] || '';
+    const twoSided = isTwoSided(item.detail);
+
     html += `
       <div id="mob-item-${i}" class="bg-gray-800 rounded-2xl p-4 ${checked ? 'opacity-60' : ''}">
         <div class="flex items-center gap-3 mb-3">
@@ -708,15 +878,26 @@ function buildMobility(programDay) {
           </div>
           <div class="flex-1">
             <div class="text-white text-sm font-medium">${item.name}</div>
-            <div class="text-gray-500 text-xs">${item.detail}</div>
-            ${item.note ? `<div class="text-gray-600 text-xs mt-1">${item.note}</div>` : ''}
+            <div class="text-gray-300 text-xs mt-0.5">${item.detail}</div>
+            ${item.note ? `<div class="text-gray-400 text-xs mt-1">${item.note}</div>` : ''}
           </div>
         </div>
         <div class="flex items-center gap-3">
+          ${twoSided ? `
+          <button id="mob-start-${i}" onclick="startMobTimer(${i}, 'Left')"
+            class="flex-1 bg-cyan-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
+            Start Left
+          </button>
+          <button onclick="startMobTimer(${i}, 'Right')"
+            class="flex-1 bg-cyan-800 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
+            Start Right
+          </button>
+          ` : `
           <button id="mob-start-${i}" onclick="startMobTimer(${i})"
             class="flex-1 bg-cyan-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
             Start
           </button>
+          `}
           <button id="mob-stop-${i}" onclick="stopMobTimer(${i})"
             class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm hidden" style="touch-action:manipulation">
             Done
@@ -799,19 +980,55 @@ function toggleMobility(i) {
 
 const mobTimers = {};
 
-function startMobTimer(i) {
+let _mobOverlayIndex = null;
+
+let _mobCurrentSide = null;
+
+function startMobTimer(i, side) {
   if (mobTimers[i]) clearInterval(mobTimers[i]);
   let seconds = 0;
-  document.getElementById(`mob-start-${i}`).classList.add('hidden');
-  document.getElementById(`mob-stop-${i}`).classList.remove('hidden');
+  _mobOverlayIndex = i;
+  _mobCurrentSide = side || null;
+
+  // Show the large overlay
+  const overlay = document.getElementById('mobTimerOverlay');
+  const nameEl = document.getElementById('mobTimerOverlayName');
+  const sideEl = document.getElementById('mobTimerOverlaySide');
+  const overlayDisplay = document.getElementById('mobTimerOverlayDisplay');
+
+  // Get exercise name from the card
+  const card = document.getElementById(`mob-item-${i}`);
+  const exName = card ? card.querySelector('.text-white.text-sm.font-medium')?.textContent || '' : '';
+  nameEl.textContent = exName;
+  sideEl.textContent = side ? side + ' Side' : '';
+  overlayDisplay.textContent = '0:00';
+  overlay.classList.remove('hidden');
+
+  // Show stop button on card, hide start
+  const startBtn = document.getElementById(`mob-start-${i}`);
+  const stopBtn = document.getElementById(`mob-stop-${i}`);
+  if (startBtn) startBtn.classList.add('hidden');
+  if (stopBtn) stopBtn.classList.remove('hidden');
+
   document.getElementById(`mob-display-${i}`).textContent = '0:00';
+
   mobTimers[i] = setInterval(() => {
     seconds++;
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
+    const timeStr = `${m}:${s.toString().padStart(2,'0')}`;
     const display = document.getElementById(`mob-display-${i}`);
-    if (display) display.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (display) display.textContent = timeStr;
+    if (overlayDisplay) overlayDisplay.textContent = timeStr;
   }, 1000);
+}
+
+function closeMobTimerOverlay() {
+  document.getElementById('mobTimerOverlay').classList.add('hidden');
+  if (_mobOverlayIndex !== null) {
+    stopMobTimer(_mobOverlayIndex);
+    _mobOverlayIndex = null;
+  }
 }
 
 function stopMobTimer(i) {
@@ -820,7 +1037,16 @@ function stopMobTimer(i) {
   const timeLogged = display ? display.textContent : '';
   document.getElementById(`mob-start-${i}`).classList.remove('hidden');
   document.getElementById(`mob-stop-${i}`).classList.add('hidden');
-  workoutData[`mob-time-${i}`] = timeLogged;
+
+  // Store side-specific time if two-sided, otherwise single time
+  if (_mobCurrentSide === 'Left') {
+    workoutData[`mob-time-${i}-left`] = timeLogged;
+  } else if (_mobCurrentSide === 'Right') {
+    workoutData[`mob-time-${i}-right`] = timeLogged;
+  } else {
+    workoutData[`mob-time-${i}`] = timeLogged;
+  }
+  _mobCurrentSide = null;
   workoutData[`mob-${i}`] = '1';
   persistWorkoutData();
   const item = document.getElementById(`mob-item-${i}`);
@@ -1081,7 +1307,14 @@ function formatLog() {
     if (wu) log += `Warm-up: ${wu}${workoutData['warmup-note'] ? ' — ' + workoutData['warmup-note'] : ''}\n`;
     log += '\n';
 
-    day.exercises.forEach(ex => {
+    const exercises = day.exercises;
+    let ei = 0;
+    while (ei < exercises.length) {
+      const ex = exercises[ei];
+      const isSuperset = ex.superset && ei + 1 < exercises.length;
+      const prefix = isSuperset ? '[Superset] ' : '';
+
+      // Log this exercise
       const cleanName = ex.name.replace(/\W+/g, '');
       const totalSets = ex.unilateral ? ex.sets * 2 : ex.sets;
       const sets = [];
@@ -1094,8 +1327,29 @@ function formatLog() {
           sets.push(`${setNum}${side}: ${w ? w + 'lbs×' : ''}${r || '?'}`);
         }
       }
-      if (sets.length) log += `${ex.name}: ${sets.join(', ')}\n`;
-    });
+      if (sets.length) log += `${prefix}A. ${ex.name}: ${sets.join(', ')}\n`;
+
+      // If superset, log the paired exercise on next line
+      if (isSuperset) {
+        const exB = exercises[ei + 1];
+        const cleanB = exB.name.replace(/\W+/g, '');
+        const totalSetsB = exB.unilateral ? exB.sets * 2 : exB.sets;
+        const setsB = [];
+        for (let i = 1; i <= totalSetsB; i++) {
+          const w = workoutData[`${cleanB}-w${i}`];
+          const r = workoutData[`${cleanB}-r${i}`];
+          if (w || r) {
+            const setNum = exB.unilateral ? Math.ceil(i / 2) : i;
+            const side = exB.unilateral ? (i % 2 === 1 ? 'L' : 'R') : '';
+            setsB.push(`${setNum}${side}: ${w ? w + 'lbs×' : ''}${r || '?'}`);
+          }
+        }
+        if (setsB.length) log += `[Superset] B. ${exB.name}: ${setsB.join(', ')}\n`;
+        ei += 2;
+      } else {
+        ei++;
+      }
+    }
 
     const cd = [workoutData['cooldown-min'] && `${workoutData['cooldown-min']} min`, workoutData['cooldown-inc'] && `${workoutData['cooldown-inc']}%`, workoutData['cooldown-spd'] && `${workoutData['cooldown-spd']} mph`].filter(Boolean).join(' / ');
     if (cd) log += `\nCool-down: ${cd}${workoutData['cooldown-note'] ? ' — ' + workoutData['cooldown-note'] : ''}\n`;
@@ -1107,12 +1361,21 @@ function formatLog() {
 
   } else if (currentSessionType === 'mobility') {
     log += `Mobility | ${date}\n`;
-    // FIX: use the active routine (program's mobility day or fallback), not hardcoded MOBILITY_ROUTINE
     const activeRoutine = getActiveMobilityRoutine();
     activeRoutine.forEach((item, i) => {
       const done = workoutData[`mob-${i}`] === '1';
-      const time = workoutData[`mob-time-${i}`];
-      if (done) log += `✓ ${item.name}${time && time !== '0:00' ? ' — ' + time : ''}\n`;
+      if (!done) return;
+      const timeLeft = workoutData[`mob-time-${i}-left`];
+      const timeRight = workoutData[`mob-time-${i}-right`];
+      const timeSingle = workoutData[`mob-time-${i}`];
+      if (timeLeft || timeRight) {
+        // Two-sided — log each side separately
+        const leftStr = timeLeft && timeLeft !== '0:00' ? timeLeft : '—';
+        const rightStr = timeRight && timeRight !== '0:00' ? timeRight : '—';
+        log += `✓ ${item.name} — L: ${leftStr} / R: ${rightStr}\n`;
+      } else {
+        log += `✓ ${item.name}${timeSingle && timeSingle !== '0:00' ? ' — ' + timeSingle : ''}\n`;
+      }
     });
     const doneCount = activeRoutine.filter((_, i) => workoutData[`mob-${i}`] === '1').length;
     log += `(${doneCount}/${activeRoutine.length} completed)\n`;
