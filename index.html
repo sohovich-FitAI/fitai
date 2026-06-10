@@ -365,6 +365,29 @@ JSON format:
   </div>
 </div>
 
+<!-- Clear Notes Confirmation — shown after Copy & Share -->
+<div id="clearNotesModal" class="fixed inset-0 z-50 hidden modal-bg flex items-end">
+  <div class="w-full bg-gray-900 rounded-t-3xl p-6 slide-up">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="text-2xl">✅</div>
+      <h3 class="font-bold text-lg text-white">Copied to clipboard</h3>
+    </div>
+    <p class="text-gray-300 text-sm leading-relaxed mb-5">
+      Paste it into your AI chat. Want to clear this workout's <span class="text-white font-semibold">warm-up, cool-down, and notes</span> so they don't carry into your next day? Your logged sets and saved history stay.
+    </p>
+    <div class="flex gap-3">
+      <button onclick="clearWorkoutNotes()"
+        class="flex-1 bg-emerald-500 text-black font-bold py-4 rounded-2xl text-base" style="touch-action:manipulation">
+        Clear notes
+      </button>
+      <button onclick="closeClearNotesModal()"
+        class="flex-1 bg-gray-700 text-white font-semibold py-4 rounded-2xl text-base" style="touch-action:manipulation">
+        Keep them
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Main App -->
 <div class="max-w-xl mx-auto p-4">
   <!-- Header -->
@@ -491,6 +514,7 @@ let timerInterval = null;
 let timerSeconds = 90;
 let timerOriginal = 90;
 let timerRunning = false;
+let timerEndTime = 0;
 let workoutData = {};
 let _pendingProgram = null;
 
@@ -565,6 +589,10 @@ function syncSessionTypeToDay() {
     const sessionSel = document.getElementById('sessionType');
     if (sessionSel) sessionSel.value = day.type;
   }
+  // FIX: keep the Day dropdown's visibility in sync on load / day change, not just
+  // when the Session Type dropdown is touched. Only strength sessions use it.
+  const wrapper = document.getElementById('daySelectWrapper');
+  if (wrapper) wrapper.style.display = currentSessionType === 'strength' ? 'block' : 'none';
 }
 
 function changeDay() {
@@ -585,6 +613,17 @@ function changeSession() {
     if (mobilityIndex !== -1) {
       currentDayIndex = mobilityIndex;
     }
+  } else if (currentSessionType === 'strength') {
+    // FIX: If the current day isn't a strength day (e.g. we were just on Mobility),
+    // snap to the first strength day so we don't render a non-strength day's data
+    // through the strength renderer (which would show "undefined sets × undefined").
+    const day = program.days[currentDayIndex];
+    if (!day || (day.type && day.type !== 'strength')) {
+      const strengthIndex = program.days.findIndex(d => !d.type || d.type === 'strength');
+      if (strengthIndex !== -1) currentDayIndex = strengthIndex;
+    }
+    const sel = document.getElementById('daySelect');
+    if (sel) sel.value = currentDayIndex;
   }
 
   buildWorkout();
@@ -736,7 +775,7 @@ function buildSupersetCard(exA, exB) {
 
     <div class="grid grid-cols-2 gap-3 mb-5">
       <div class="bg-gray-800 rounded-2xl p-3">
-        <button onclick="openVideoModal('${exA.name.replace(/'/g, "\'")}')" class="w-full text-left" style="touch-action:manipulation">
+        <button onclick="openVideoModal('${exA.name.replace(/'/g, "\\'")}')" class="w-full text-left" style="touch-action:manipulation">
           <div class="text-cyan-400 font-semibold text-sm underline decoration-dotted decoration-cyan-700 mb-1">A. ${exA.name}</div>
         </button>
         <div class="text-gray-400 text-xs mb-2">${exA.target}</div>`;
@@ -752,7 +791,7 @@ function buildSupersetCard(exA, exB) {
   }
   html += `</div>
       <div class="bg-gray-800 rounded-2xl p-3">
-        <button onclick="openVideoModal('${exB.name.replace(/'/g, "\'")}')" class="w-full text-left" style="touch-action:manipulation">
+        <button onclick="openVideoModal('${exB.name.replace(/'/g, "\\'")}')" class="w-full text-left" style="touch-action:manipulation">
           <div class="text-cyan-400 font-semibold text-sm underline decoration-dotted decoration-cyan-700 mb-1">B. ${exB.name}</div>
         </button>
         <div class="text-gray-400 text-xs mb-2">${exB.target}</div>`;
@@ -800,7 +839,7 @@ function buildSupersetCard(exA, exB) {
                 oninput="saveInput('${rKey}', this.value)">
             </div>
             <div class="flex gap-2 mb-3">
-              <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${round} ${side}')"
+              <button onclick="markDone(this, '${exA.name.replace(/'/g, "\\'")}', '${round} ${side}')"
                 class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE A ${side}</button>
               <button onclick="repeatLast('${cleanA}', ${idx})"
                 class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
@@ -823,7 +862,7 @@ function buildSupersetCard(exA, exB) {
               oninput="saveInput('${rKey}', this.value)">
           </div>
           <div class="flex gap-2 mb-3">
-            <button onclick="markDone(this, '${exA.name.replace(/'/g, "\'")}', '${round}')"
+            <button onclick="markDone(this, '${exA.name.replace(/'/g, "\\'")}', '${round}')"
               class="flex-1 bg-emerald-500 text-black font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE A</button>
             <button onclick="repeatLast('${cleanA}', ${round})"
               class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
@@ -856,7 +895,7 @@ function buildSupersetCard(exA, exB) {
                 oninput="saveInput('${rKey}', this.value)">
             </div>
             <div class="flex gap-2 ${isLast ? '' : 'mb-3'}">
-              <button onclick="${isLast ? 'markDone(this, \'' + exB.name.replace(/'/g, "\'") + '\', \'' + round + ' ' + side + '\'); openTimer()' : 'markDone(this, \'' + exB.name.replace(/'/g, "\'") + '\', \'' + round + ' ' + side + '\')'}"
+              <button onclick="${isLast ? 'markDone(this, \'' + exB.name.replace(/'/g, "\\'") + '\', \'' + round + ' ' + side + '\'); openTimer()' : 'markDone(this, \'' + exB.name.replace(/'/g, "\\'") + '\', \'' + round + ' ' + side + '\')'}"
                 class="flex-1 ${isLast ? 'bg-purple-600 text-white' : 'bg-purple-800 text-purple-200'} font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">
                 ${isLast ? 'DONE B Right — Start Rest' : 'DONE B Left'}
               </button>
@@ -882,7 +921,7 @@ function buildSupersetCard(exA, exB) {
               oninput="saveInput('${rKey}', this.value)">
           </div>
           <div class="flex gap-2">
-            <button onclick="markDone(this, '${exB.name.replace(/'/g, "\'")}', '${round}'); openTimer()"
+            <button onclick="markDone(this, '${exB.name.replace(/'/g, "\\'")}', '${round}'); openTimer()"
               class="flex-1 bg-purple-600 text-white font-semibold py-3 rounded-xl text-sm" style="touch-action:manipulation">DONE B — Start Rest</button>
             <button onclick="repeatLast('${cleanB}', ${round})"
               class="bg-gray-700 px-5 py-3 rounded-xl text-lg" style="touch-action:manipulation">↺</button>
@@ -1099,6 +1138,7 @@ function toggleMobility(i) {
 }
 
 const mobTimers = {};
+const mobStartTimes = {};
 
 let _mobOverlayIndex = null;
 
@@ -1106,7 +1146,7 @@ let _mobCurrentSide = null;
 
 function startMobTimer(i, side) {
   if (mobTimers[i]) clearInterval(mobTimers[i]);
-  let seconds = 0;
+  mobStartTimes[i] = Date.now();
   _mobOverlayIndex = i;
   _mobCurrentSide = side || null;
 
@@ -1132,15 +1172,25 @@ function startMobTimer(i, side) {
 
   document.getElementById(`mob-display-${i}`).textContent = '0:00';
 
-  mobTimers[i] = setInterval(() => {
-    seconds++;
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    const timeStr = `${m}:${s.toString().padStart(2,'0')}`;
-    const display = document.getElementById(`mob-display-${i}`);
-    if (display) display.textContent = timeStr;
-    if (overlayDisplay) overlayDisplay.textContent = timeStr;
-  }, 1000);
+  // Wall-clock based so the count stays accurate if the screen sleeps or the app
+  // is backgrounded (mobile browsers throttle/suspend setInterval).
+  mobTimers[i] = setInterval(() => tickMobTimer(i), 250);
+}
+
+function mobTimeString(i) {
+  const seconds = Math.max(0, Math.floor((Date.now() - mobStartTimes[i]) / 1000));
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function tickMobTimer(i) {
+  if (mobStartTimes[i] == null) return;
+  const timeStr = mobTimeString(i);
+  const display = document.getElementById(`mob-display-${i}`);
+  if (display) display.textContent = timeStr;
+  const overlayDisplay = document.getElementById('mobTimerOverlayDisplay');
+  if (overlayDisplay && _mobOverlayIndex === i) overlayDisplay.textContent = timeStr;
 }
 
 function closeMobTimerOverlay() {
@@ -1153,8 +1203,17 @@ function closeMobTimerOverlay() {
 
 function stopMobTimer(i) {
   if (mobTimers[i]) { clearInterval(mobTimers[i]); delete mobTimers[i]; }
-  const display = document.getElementById(`mob-display-${i}`);
-  const timeLogged = display ? display.textContent : '';
+  // Compute the final time from the wall clock for accuracy after a sleep/background
+  let timeLogged;
+  if (mobStartTimes[i] != null) {
+    timeLogged = mobTimeString(i);
+    delete mobStartTimes[i];
+  } else {
+    const display = document.getElementById(`mob-display-${i}`);
+    timeLogged = display ? display.textContent : '';
+  }
+  const displayEl = document.getElementById(`mob-display-${i}`);
+  if (displayEl) displayEl.textContent = timeLogged;
   document.getElementById(`mob-start-${i}`).classList.remove('hidden');
   document.getElementById(`mob-stop-${i}`).classList.add('hidden');
 
@@ -1226,25 +1285,41 @@ function setTimer(s) {
 
 function toggleTimer() {
   if (timerRunning) {
+    // Pause — capture remaining time from the wall clock (a throttled tab may be behind)
     clearInterval(timerInterval);
+    timerSeconds = remainingFromEnd();
     timerRunning = false;
     document.getElementById('timerStartBtn').textContent = 'Resume';
+    updateTimerDisplay();
   } else {
+    if (timerSeconds <= 0) timerSeconds = timerOriginal; // restart after finishing
+    // Anchor to an absolute end time so backgrounding / screen sleep can't desync us
+    timerEndTime = Date.now() + timerSeconds * 1000;
     timerRunning = true;
     document.getElementById('timerStartBtn').textContent = 'Pause';
-    timerInterval = setInterval(() => {
-      if (timerSeconds <= 0) {
-        clearInterval(timerInterval);
-        timerRunning = false;
-        document.getElementById('timerStartBtn').textContent = 'Start';
-        document.getElementById('timerDisplay').textContent = 'Go!';
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        return;
-      }
-      timerSeconds--;
-      updateTimerDisplay();
-    }, 1000);
+    clearInterval(timerInterval);
+    timerInterval = setInterval(tickTimer, 250);
+    tickTimer();
   }
+}
+
+function remainingFromEnd() {
+  return Math.max(0, Math.round((timerEndTime - Date.now()) / 1000));
+}
+
+function tickTimer() {
+  timerSeconds = remainingFromEnd();
+  if (timerSeconds <= 0) { finishTimer(); return; }
+  updateTimerDisplay();
+}
+
+function finishTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  document.getElementById('timerStartBtn').textContent = 'Start';
+  document.getElementById('timerDisplay').textContent = 'Go!';
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 }
 
 function resetTimer() {
@@ -1447,7 +1522,8 @@ function formatLog() {
           sets.push(`${setNum}${side}: ${w ? w + 'lbs×' : ''}${r || '?'}`);
         }
       }
-      if (sets.length) log += `${prefix}A. ${ex.name}: ${sets.join(', ')}\n`;
+      const label = isSuperset ? 'A. ' : '';
+      if (sets.length) log += `${prefix}${label}${ex.name}: ${sets.join(', ')}\n`;
 
       // If superset, log the paired exercise on next line
       if (isSuperset) {
@@ -1512,7 +1588,7 @@ function formatLog() {
 function copyLog() {
   const log = formatLog();
   try {
-    navigator.clipboard.writeText(log).then(() => showToast('Copied — paste into chat')).catch(() => fallbackCopy(log));
+    navigator.clipboard.writeText(log).then(promptClearNotes).catch(() => fallbackCopy(log));
   } catch(e) { fallbackCopy(log); }
 }
 
@@ -1525,7 +1601,32 @@ function fallbackCopy(text) {
   ta.select();
   document.execCommand('copy');
   document.body.removeChild(ta);
-  showToast('Copied — paste into chat');
+  promptClearNotes();
+}
+
+// These fields use shared (non-day-specific) keys, so without clearing they bleed
+// from one day's session into the next. Logged set weights/reps are keyed per
+// exercise and are intentionally left alone.
+const NOTE_KEYS = [
+  'warmup-min', 'warmup-inc', 'warmup-spd', 'warmup-note',
+  'cooldown-min', 'cooldown-inc', 'cooldown-spd', 'cooldown-note',
+  'workout-notes'
+];
+
+function promptClearNotes() {
+  document.getElementById('clearNotesModal').classList.remove('hidden');
+}
+
+function closeClearNotesModal() {
+  document.getElementById('clearNotesModal').classList.add('hidden');
+}
+
+function clearWorkoutNotes() {
+  NOTE_KEYS.forEach(k => { delete workoutData[k]; });
+  persistWorkoutData();
+  buildWorkout(); // re-render so the cleared fields show empty
+  closeClearNotesModal();
+  showToast('Notes cleared ✓');
 }
 
 function saveWorkout() {
@@ -1546,6 +1647,17 @@ function showToast(msg) {
   toast.classList.remove('hidden');
   setTimeout(() => toast.classList.add('hidden'), 2500);
 }
+
+// ==================== BACKGROUND / WAKE RESYNC ====================
+// Mobile browsers suspend setInterval when the app is backgrounded or the screen
+// sleeps. Both timers are anchored to wall-clock timestamps, so when we return to
+// the foreground we just recompute from the real clock — no drift, and the rest
+// timer fires "Go!" immediately if it elapsed while we were away.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (timerRunning) tickTimer();
+  Object.keys(mobStartTimes).forEach(k => tickMobTimer(Number(k)));
+});
 
 // ==================== START ====================
 init();
